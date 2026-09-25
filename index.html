@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get a Move On! — Download</title>
+<meta name="description" content="Get a Move On! — a co-op moving game with physics for 1–4 players. No job too big.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #131a2a;
+    --bg-deep: #0c111d;
+    --card: #1b2336;
+    --card-border: #2a3450;
+    --text: #eef1f7;
+    --muted: #9aa5c0;
+    --cardboard: #f4d6a8;
+    --cardboard-dark: #5a3a1a;
+    --orange: #f28c28;
+    --orange-hover: #ff9d3d;
+    --teal: #2bb3a3;
+    --green: #3ecf8e;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 50% -10%, #223052 0%, var(--bg) 55%, var(--bg-deep) 100%) fixed;
+    background-color: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 Rubik, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  a { color: var(--orange); }
+  a:focus-visible, button:focus-visible, select:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+
+  /* Cinta de embalar arriba */
+  .tape {
+    height: 12px;
+    background: repeating-linear-gradient(-45deg, var(--orange) 0 16px, #1d1f24 16px 32px);
+  }
+
+  .lang {
+    position: absolute; top: 24px; right: 16px;
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 14px;
+  }
+  .lang select {
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--card-border); border-radius: 10px;
+    padding: 6px 10px; font: inherit; cursor: pointer;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 16px 40px; }
+
+  .hero { text-align: center; margin-bottom: 32px; }
+  .eyebrow {
+    margin: 0 0 12px; color: var(--orange);
+    font-weight: 700; font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+  }
+  .title {
+    margin: 0; font: 400 clamp(40px, 9vw, 84px)/1 Bungee, Rubik, sans-serif;
+    color: var(--cardboard);
+    text-shadow: 0 5px 0 var(--cardboard-dark), 0 10px 24px rgba(0, 0, 0, .45);
+  }
+  .title span { color: var(--orange); }
+  .slogan { margin: 14px 0 0; color: var(--cardboard); font-style: italic; font-size: 20px; opacity: .9; }
+  .pitch { margin: 14px auto 0; max-width: 560px; color: var(--muted); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: var(--radius); padding: 24px; margin-bottom: 20px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 22px; font-weight: 700; }
+
+  .release { text-align: center; padding: 32px 24px; border-color: rgba(242, 140, 40, .45); }
+  .badge {
+    display: inline-block; padding: 3px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--green); background: rgba(62, 207, 142, .12); border: 1px solid rgba(62, 207, 142, .35);
+  }
+  .badge.soon { color: var(--orange); background: rgba(242, 140, 40, .12); border-color: rgba(242, 140, 40, .4); }
+  .version { margin: 14px 0 6px; font: 400 40px/1.1 Bungee, Rubik, sans-serif; }
+  .meta { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 34px; border-radius: 12px;
+    background: var(--orange); color: #1d1206; text-decoration: none;
+    font-weight: 700; font-size: 17px; letter-spacing: .08em; text-transform: uppercase;
+    box-shadow: 0 5px 0 var(--cardboard-dark);
+    transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover { background: var(--orange-hover); transform: translateY(-2px); box-shadow: 0 7px 0 var(--cardboard-dark); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--cardboard-dark); }
+  .btn[aria-disabled="true"] { background: #3a4460; color: #8792ad; box-shadow: none; pointer-events: none; }
+  .btn svg { width: 20px; height: 20px; }
+  .also { margin: 16px 0 0; color: var(--muted); font-size: 14px; }
+  .also a { font-weight: 600; margin: 0 4px; }
+  .hint { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
+  .rebind { margin: 16px 0 0; }
+  .platform-links a { font-size: 14px; font-weight: 600; margin-right: 14px; }
+  .hint code, .card code {
+    background: var(--bg-deep); border: 1px solid var(--card-border); border-radius: 6px;
+    padding: 1px 6px; font-size: .92em; color: var(--text);
+  }
+  .game-lang { margin-top: 6px; color: var(--cardboard); }
+
+  .demo {
+    margin: 0 0 20px; padding: 10px 14px; border-radius: 10px; text-align: center;
+    background: rgba(43, 179, 163, .12); border: 1px dashed rgba(43, 179, 163, .6); color: #9fe5dc; font-size: 14px;
+  }
+
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .shots a { display: block; border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border); }
+  .shots a:first-child { grid-column: 1 / -1; }
+  .shots img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; transition: transform .25s ease; }
+  .shots a:hover img { transform: scale(1.03); }
+
+  .notes p { margin: 0 0 8px; }
+  .notes p:first-child { font-weight: 600; }
+  .notes ul { margin: 0 0 8px; padding-left: 20px; }
+  .notes li { margin: 4px 0; }
+
+  .steps { margin: 0 0 14px; padding: 0; list-style: none; counter-reset: step; }
+  .steps li { position: relative; margin: 0 0 10px; padding-left: 40px; counter-increment: step; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--orange); color: #1d1206; font-weight: 700; font-size: 14px;
+  }
+  .card p { margin: 0 0 10px; }
+  .warn { color: var(--muted); font-size: 14px; }
+
+  .controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px 20px; }
+  .control { display: flex; align-items: center; gap: 12px; }
+  kbd {
+    flex: none; min-width: 44px; padding: 4px 10px; border-radius: 8px; text-align: center;
+    background: var(--bg-deep); border: 1px solid var(--card-border); border-bottom-width: 3px;
+    font: 600 13px/1.4 Rubik, sans-serif; color: var(--cardboard);
+  }
+
+  .release-item { padding: 16px 0; border-top: 1px solid var(--card-border); }
+  .release-item:first-of-type { border-top: 0; padding-top: 0; }
+  .release-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
+  .release-tag { font: 400 20px/1.2 Bungee, Rubik, sans-serif; color: var(--cardboard); }
+  .release-date { color: var(--muted); font-size: 14px; }
+  .release-item > a { font-size: 14px; font-weight: 600; }
+
+  footer { text-align: center; color: var(--muted); font-size: 14px; margin-top: 32px; }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 600px) {
+    .wrap { padding-top: 72px; }
+    .card { padding: 20px 16px; }
+    .shots { grid-template-columns: 1fr; }
+    .version { font-size: 32px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn, .shots img { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="tape" aria-hidden="true"></div>
+
+<div class="lang">
+  <label for="lang-select" data-i18n="language">Language</label>
+  <select id="lang-select"></select>
+</div>
+
+<main class="wrap">
+  <header class="hero">
+    <p class="eyebrow" data-i18n="eyebrow"></p>
+    <h1 class="title">GET A <span>MOVE ON!</span></h1>
+    <p class="slogan">No job too big.</p>
+    <p class="pitch" data-i18n="pitch"></p>
+  </header>
+
+  <p class="demo" id="demo" data-i18n="demo" hidden></p>
+
+  <section class="card release" aria-live="polite">
+    <span class="badge" id="badge"></span>
+    <div class="version" id="version">—</div>
+    <p class="meta" id="meta"></p>
+    <a class="btn" id="download" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+      <span id="download-label"></span>
+    </a>
+    <p class="also" id="also"></p>
+    <p class="hint" id="hint"></p>
+    <p class="hint game-lang" id="game-lang" data-i18n="gameLang"></p>
+  </section>
+
+  <section class="shots" id="shots"></section>
+
+  <section class="card" id="news-card" hidden>
+    <h2 data-i18n="whatsNew"></h2>
+    <div class="notes" id="news"></div>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="friendsTitle"></h2>
+    <ol class="steps">
+      <li data-i18n-html="friends1"></li>
+      <li data-i18n-html="friends2"></li>
+      <li data-i18n-html="friends3"></li>
+    </ol>
+    <p data-i18n="friendsRemote"></p>
+    <p data-i18n-html="solo"></p>
+    <p data-i18n="friendsVersion"></p>
+    <p class="warn" id="smartscreen" data-i18n="smartscreen"></p>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="controls"></h2>
+    <div class="controls" id="controls"></div>
+    <p class="warn rebind" data-i18n="rebind"></p>
+  </section>
+
+  <section class="card" id="history-card" hidden>
+    <h2 data-i18n="history"></h2>
+    <div id="history"></div>
+  </section>
+
+  <footer><span data-i18n="footer"></span></footer>
+</main>
+
+<script>
+  // La página vive en https://<usuario>.github.io/<repo>/ y lee las versiones
+  // publicadas (GitHub Releases) de ese mismo repositorio. Abierta en local
+  // (file://) o con ?demo, enseña datos de ejemplo.
+  // Cada versión trae un archivo por sistema, siempre con el mismo nombre.
+  const PLATFORMS = {
+    windows: { os: "Windows", file: "GetAMoveOn.exe", hint: "hintWindows" },
+    macos: { os: "macOS", file: "GetAMoveOn-macos.zip", hint: "hintMac" },
+    linux: { os: "Linux", file: "GetAMoveOn.x86_64", hint: "hintLinux" },
+  };
+  const onPages = location.hostname.endsWith("github.io");
+  const OWNER = onPages ? location.hostname.split(".")[0] : "Dreufter";
+  const REPO = (onPages && location.pathname.split("/").filter(Boolean)[0]) || "get-a-move-on-web";
+  const latestUrl = platform => `https://github.com/${OWNER}/${REPO}/releases/latest/download/${PLATFORMS[platform].file}`;
+  const params = new URLSearchParams(location.search);
+  const DEMO = location.protocol === "file:" || params.has("demo");
+
+  // El sistema de quien visita (Windows si no se sabe). ?os=linux|macos|windows lo fuerza.
+  function detectPlatform() {
+    const forced = params.get("os");
+    if (PLATFORMS[forced]) return forced;
+    const ua = `${(navigator.userAgentData && navigator.userAgentData.platform) || ""} ${navigator.platform || ""} ${navigator.userAgent || ""}`;
+    if (/android|iphone|ipad/i.test(ua)) return "windows";
+    if (/mac/i.test(ua)) return "macos";
+    if (/linux|x11|cros/i.test(ua)) return "linux";
+    return "windows";
+  }
+  const PLATFORM = detectPlatform();
+
+  const LANGS = {
+    en: "English", es: "Español", pt: "Português", fr: "Français", de: "Deutsch", it: "Italiano",
+    pl: "Polski", tr: "Türkçe", ru: "Русский", zh: "中文", ja: "日本語", ko: "한국어",
+  };
+  const LOCALES = { en: "en", es: "es-ES", pt: "pt-BR", fr: "fr-FR", de: "de-DE", it: "it-IT", pl: "pl-PL", tr: "tr-TR", ru: "ru-RU", zh: "zh-CN", ja: "ja-JP", ko: "ko-KR" };
+
+  const I18N = {
+    en: {
+      language: "Language",
+      eyebrow: "Co-op physics · 1–4 players",
+      pitch: "A co-op moving game with physics. Carry the sofa together, don't break the vase and get everything into the truck.",
+      demo: "Preview with sample data. On GitHub Pages it shows the real versions.",
+      latest: "Latest version",
+      released: "Released {date} · {size}",
+      download: "Download",
+      gameLang: "The game is in Spanish for now.",
+      loading: "Loading…",
+      soonTitle: "Coming soon",
+      soonText: "No version has been published yet. Check back soon!",
+      apiError: "Couldn't load the version list. The button still downloads the latest one.",
+      whatsNew: "What's new",
+      friendsTitle: "Play with friends",
+      friendsRemote: "Playing from different homes? Use Radmin VPN or ZeroTier and the IP it gives you, or open UDP port 7777 on the host's router.",
+      friendsVersion: "Everyone needs the same version. Up to 4 players per game.",
+      smartscreen: "If Windows says it “protected your PC”: More info → Run anyway.",
+      controls: "Controls",
+      ctlMove: "Move", ctlRun: "Run", ctlJump: "Jump", ctlGrab: "Grab (hold)",
+      ctlRotate: "Rotate what you're holding",
+      ctlUse: "Use",
+      ctlCrouch: "Crouch (hold)", ctlView: "Switch view",
+      keySpace: "Space", keyLeft: "Left click", keyRight: "Right click", keyRotate: "R + mouse",
+      history: "Version history",
+      downloadThis: "Download this version",
+      noNotes: "No notes for this version.",
+      footer: "Made with Godot 4",
+      downloadFor: "Download for {os}",
+      otherPlatforms: "Also for:",
+      hintWindows: "No installation needed: open {file}. To update, download the new version and replace the file.",
+      hintLinux: "Give it permission to run (chmod +x {file}) and open it.",
+      hintMac: "Unzip it and open the app. The first time, macOS will block it: System Settings → Privacy & Security → Open Anyway.",
+      friends1: "One player clicks <b>Crear partida</b> (Create game) and then <b>Crear</b>, and allows access in the firewall.",
+      friends2: "Their IP shows up in the pause menu (<b>Esc</b>); <b>Copiar IP</b> (Copy IP) copies it to share.",
+      friends3: "The others click <b>Unirse a una partida</b> (Join a game), enter that IP and click <b>Unirse</b> (Join).",
+      solo: "Nobody to play with? <b>Jugar solo</b> (Play solo): you're twice as strong and Esc really pauses the game.",
+      ctlKick: "Kick",
+      ctlChat: "Text chat",
+      ctlTalk: "Talk (proximity voice chat)",
+      ctlMenu: "Menu / pause",
+      ctlFps: "FPS counter",
+      rebind: "You can change every key in Options (Opciones).",
+      altPool: "A box splashing into the chalet's pool",
+      altTruck: "The moving truck parked in front of the chalet",
+      altLiving: "The living room with the furniture to move",
+      altCarry: "Carrying a box to the truck",
+      altMenu: "The main menu",
+    },
+    es: {
+      language: "Idioma",
+      eyebrow: "Físicas cooperativas · 1–4 jugadores",
+      pitch: "Un juego cooperativo de mudanzas con físicas. Cargad el sofá entre dos, no rompáis el jarrón y metedlo todo en el camión.",
+      demo: "Vista previa con datos de ejemplo. En GitHub Pages se verán las versiones reales.",
+      latest: "Última versión",
+      released: "Publicada el {date} · {size}",
+      download: "Descargar",
+      gameLang: "El juego está en español.",
+      loading: "Cargando…",
+      soonTitle: "Muy pronto",
+      soonText: "Todavía no hay ninguna versión publicada. ¡Vuelve pronto!",
+      apiError: "No se pudo cargar la lista de versiones. El botón descarga igualmente la última.",
+      whatsNew: "Novedades",
+      friendsTitle: "Jugar con amigos",
+      friendsRemote: "¿Cada uno en su casa? Usad Radmin VPN o ZeroTier y la IP que os dé, o abrid el puerto 7777 UDP en el router del anfitrión.",
+      friendsVersion: "Todos necesitáis la misma versión. Caben hasta 4 jugadores.",
+      smartscreen: "Si Windows avisa de que “protegió su PC”: Más información → Ejecutar de todas formas.",
+      controls: "Controles",
+      ctlMove: "Moverse", ctlRun: "Correr", ctlJump: "Saltar", ctlGrab: "Agarrar (mantener)",
+      ctlRotate: "Girar lo que llevas",
+      ctlUse: "Usar",
+      ctlCrouch: "Agacharse (mantener)", ctlView: "Cambiar vista",
+      keySpace: "Espacio", keyLeft: "Clic izq.", keyRight: "Clic der.", keyRotate: "R + ratón",
+      history: "Historial de versiones",
+      downloadThis: "Descargar esta versión",
+      noNotes: "Sin notas para esta versión.",
+      footer: "Hecho con Godot 4",
+      downloadFor: "Descargar para {os}",
+      otherPlatforms: "También para:",
+      hintWindows: "No hace falta instalar nada: abre {file}. Para actualizar, descarga la versión nueva y sustituye el archivo.",
+      hintLinux: "Dale permiso de ejecución (chmod +x {file}) y ábrelo.",
+      hintMac: "Descomprímelo y abre la app. La primera vez macOS la bloqueará: Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente.",
+      friends1: "Uno pulsa <b>Crear partida</b> y luego <b>Crear</b> (y permite el acceso en el firewall).",
+      friends2: "Su IP sale en el menú de pausa (<b>Esc</b>); con <b>Copiar IP</b> la copia para pasarla.",
+      friends3: "Los demás pulsan <b>Unirse a una partida</b>, escriben esa IP y pulsan <b>Unirse</b>.",
+      solo: "¿No tienes con quién jugar? <b>Jugar solo</b>: tienes el doble de fuerza y Esc pausa el juego de verdad.",
+      ctlKick: "Patear",
+      ctlChat: "Chat de texto",
+      ctlTalk: "Hablar (chat de voz por proximidad)",
+      ctlMenu: "Menú / pausa",
+      ctlFps: "Contador de FPS",
+      rebind: "Puedes cambiar todas las teclas en Opciones.",
+      altPool: "Una caja cayendo a la piscina del chalet",
+      altTruck: "El camión de mudanzas aparcado delante del chalet",
+      altLiving: "El salón con los muebles que hay que llevarse",
+      altCarry: "Llevando una caja al camión",
+      altMenu: "El menú principal",
+    },
+    pt: {
+      language: "Idioma",
+      eyebrow: "Física cooperativa · 1–4 jogadores",
+      pitch: "Um jogo cooperativo de mudanças com física. Carreguem o sofá juntos, não quebrem o vaso e coloquem tudo no caminhão.",
+      latest: "Versão mais recente",
+      released: "Publicada em {date} · {size}",
+      download: "Baixar",
+      gameLang: "Por enquanto, o jogo está em espanhol.",
+      loading: "Carregando…",
+      soonTitle: "Em breve",
+      soonText: "Ainda não há nenhuma versão publicada. Volte em breve!",
+      apiError: "Não foi possível carregar a lista de versões. O botão continua baixando a mais recente.",
+      whatsNew: "Novidades",
+      friendsTitle: "Jogar com amigos",
+      friendsRemote: "Cada um na sua casa? Usem Radmin VPN ou ZeroTier e o IP que ele der, ou abram a porta UDP 7777 no roteador do anfitrião.",
+      friendsVersion: "Todos precisam da mesma versão. Cabem até 4 jogadores.",
+      smartscreen: "Se o Windows avisar que “protegeu o computador”: Mais informações → Executar assim mesmo.",
+      controls: "Controles",
+      ctlMove: "Mover-se", ctlRun: "Correr", ctlJump: "Pular", ctlGrab: "Agarrar (segurar)",
+      ctlRotate: "Girar o que você carrega",
+      ctlUse: "Usar",
+      ctlCrouch: "Agachar (segurar)", ctlView: "Mudar a câmera",
+      keySpace: "Espaço", keyLeft: "Clique esq.", keyRight: "Clique dir.", keyRotate: "R + mouse",
+      history: "Histórico de versões",
+      downloadThis: "Baixar esta versão",
+      noNotes: "Sem notas para esta versão.",
+      footer: "Feito com Godot 4",
+      downloadFor: "Baixar para {os}",
+      otherPlatforms: "Também para:",
+      hintWindows: "Não precisa instalar: abra {file}. Para atualizar, baixe a nova versão e substitua o arquivo.",
+      hintLinux: "Dê permissão de execução (chmod +x {file}) e abra.",
+      hintMac: "Descompacte e abra o app. Na primeira vez o macOS vai bloqueá-lo: Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim.",
+      friends1: "Um jogador clica em <b>Crear partida</b> (Criar partida) e depois em <b>Crear</b>, e permite o acesso no firewall.",
+      friends2: "O IP dele aparece no menu de pausa (<b>Esc</b>); <b>Copiar IP</b> copia para compartilhar.",
+      friends3: "Os outros clicam em <b>Unirse a una partida</b> (Entrar em uma partida), digitam esse IP e clicam em <b>Unirse</b> (Entrar).",
+      solo: "Sem ninguém para jogar? <b>Jugar solo</b> (Jogar sozinho): você tem o dobro de força e o Esc pausa o jogo de verdade.",
+      ctlKick: "Chutar",
+      ctlChat: "Chat de texto",
+      ctlTalk: "Falar (chat de voz por proximidade)",
+      ctlMenu: "Menu / pausa",
+      ctlFps: "Contador de FPS",
+      rebind: "Você pode mudar todas as teclas em Opções (Opciones).",
+    },
+    fr: {
+      language: "Langue",
+      eyebrow: "Physique en coop · 1 à 4 joueurs",
+      pitch: "Un jeu de déménagement coopératif basé sur la physique. Portez le canapé à deux, ne cassez pas le vase et chargez tout dans le camion.",
+      latest: "Dernière version",
+      released: "Publiée le {date} · {size}",
+      download: "Télécharger",
+      gameLang: "Pour l'instant, le jeu est en espagnol.",
+      loading: "Chargement…",
+      soonTitle: "Bientôt disponible",
+      soonText: "Aucune version n'a encore été publiée. Revenez bientôt !",
+      apiError: "Impossible de charger la liste des versions. Le bouton télécharge quand même la dernière.",
+      whatsNew: "Nouveautés",
+      friendsTitle: "Jouer entre amis",
+      friendsRemote: "Chacun chez soi ? Utilisez Radmin VPN ou ZeroTier avec l'IP qu'il vous donne, ou ouvrez le port UDP 7777 sur la box de l'hôte.",
+      friendsVersion: "Tout le monde doit avoir la même version. Jusqu'à 4 joueurs par partie.",
+      smartscreen: "Si Windows indique qu'il « a protégé votre ordinateur » : Informations complémentaires → Exécuter quand même.",
+      controls: "Commandes",
+      ctlMove: "Se déplacer", ctlRun: "Courir", ctlJump: "Sauter", ctlGrab: "Attraper (maintenir)",
+      ctlRotate: "Tourner l'objet tenu",
+      ctlUse: "Utiliser",
+      ctlCrouch: "S'accroupir (maintenir)", ctlView: "Changer de vue",
+      keySpace: "Espace", keyLeft: "Clic gauche", keyRight: "Clic droit", keyRotate: "R + souris",
+      history: "Historique des versions",
+      downloadThis: "Télécharger cette version",
+      noNotes: "Pas de notes pour cette version.",
+      footer: "Fait avec Godot 4",
+      downloadFor: "Télécharger pour {os}",
+      otherPlatforms: "Aussi pour :",
+      hintWindows: "Aucune installation : ouvrez {file}. Pour mettre à jour, téléchargez la nouvelle version et remplacez le fichier.",
+      hintLinux: "Rendez-le exécutable (chmod +x {file}) et lancez-le.",
+      hintMac: "Décompressez-le et ouvrez l'app. La première fois, macOS la bloquera : Réglages Système → Confidentialité et sécurité → Ouvrir quand même.",
+      friends1: "Un joueur clique sur <b>Crear partida</b> (Créer une partie) puis sur <b>Crear</b>, et autorise l'accès dans le pare-feu.",
+      friends2: "Son IP s'affiche dans le menu pause (<b>Échap</b>) ; <b>Copiar IP</b> (Copier l'IP) la copie pour la partager.",
+      friends3: "Les autres cliquent sur <b>Unirse a una partida</b> (Rejoindre une partie), saisissent cette IP et cliquent sur <b>Unirse</b> (Rejoindre).",
+      solo: "Personne avec qui jouer ? <b>Jugar solo</b> (Jouer seul) : vous êtes deux fois plus fort et Échap met vraiment le jeu en pause.",
+      ctlKick: "Coup de pied",
+      ctlChat: "Chat écrit",
+      ctlTalk: "Parler (chat vocal de proximité)",
+      ctlMenu: "Menu / pause",
+      ctlFps: "Compteur de FPS",
+      rebind: "Toutes les touches se changent dans Options (Opciones).",
+    },
+    de: {
+      language: "Sprache",
+      eyebrow: "Koop-Physik · 1–4 Spieler",
+      pitch: "Ein kooperatives Umzugsspiel mit Physik. Tragt das Sofa zu zweit, zerbrecht nicht die Vase und ladet alles in den Lkw.",
+      latest: "Neueste Version",
+      released: "Veröffentlicht am {date} · {size}",
+      download: "Herunterladen",
+      gameLang: "Das Spiel ist vorerst auf Spanisch.",
+      loading: "Wird geladen…",
+      soonTitle: "Demnächst",
+      soonText: "Es wurde noch keine Version veröffentlicht. Schau bald wieder vorbei!",
+      apiError: "Die Versionsliste konnte nicht geladen werden. Der Button lädt trotzdem die neueste Version herunter.",
+      whatsNew: "Neuigkeiten",
+      friendsTitle: "Mit Freunden spielen",
+      friendsRemote: "Jeder bei sich zu Hause? Nutzt Radmin VPN oder ZeroTier und die IP, die es euch gibt, oder öffnet den UDP-Port 7777 im Router des Hosts.",
+      friendsVersion: "Alle brauchen dieselbe Version. Bis zu 4 Spieler pro Partie.",
+      smartscreen: "Wenn Windows meldet, dass es „den Computer geschützt“ hat: Weitere Informationen → Trotzdem ausführen.",
+      controls: "Steuerung",
+      ctlMove: "Bewegen", ctlRun: "Rennen", ctlJump: "Springen", ctlGrab: "Greifen (halten)",
+      ctlRotate: "Getragenes drehen",
+      ctlUse: "Benutzen",
+      ctlCrouch: "Ducken (halten)", ctlView: "Ansicht wechseln",
+      keySpace: "Leertaste", keyLeft: "Linksklick", keyRight: "Rechtsklick", keyRotate: "R + Maus",
+      history: "Versionsverlauf",
+      downloadThis: "Diese Version herunterladen",
+      noNotes: "Keine Hinweise zu dieser Version.",
+      footer: "Erstellt mit Godot 4",
+      downloadFor: "Für {os} herunterladen",
+      otherPlatforms: "Auch für:",
+      hintWindows: "Keine Installation nötig: Öffne {file}. Zum Aktualisieren die neue Version herunterladen und die Datei ersetzen.",
+      hintLinux: "Mach sie ausführbar (chmod +x {file}) und starte sie.",
+      hintMac: "Entpacken und die App öffnen. Beim ersten Mal blockiert macOS sie: Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen.",
+      friends1: "Einer klickt auf <b>Crear partida</b> (Spiel erstellen) und dann auf <b>Crear</b> und erlaubt den Zugriff in der Firewall.",
+      friends2: "Seine IP steht im Pausenmenü (<b>Esc</b>); <b>Copiar IP</b> (IP kopieren) kopiert sie zum Teilen.",
+      friends3: "Die anderen klicken auf <b>Unirse a una partida</b> (Einem Spiel beitreten), geben diese IP ein und klicken auf <b>Unirse</b> (Beitreten).",
+      solo: "Niemand zum Mitspielen? <b>Jugar solo</b> (Allein spielen): Du bist doppelt so stark und Esc pausiert das Spiel wirklich.",
+      ctlKick: "Treten",
+      ctlChat: "Textchat",
+      ctlTalk: "Sprechen (Proximity-Voicechat)",
+      ctlMenu: "Menü / Pause",
+      ctlFps: "FPS-Anzeige",
+      rebind: "Alle Tasten lassen sich unter Optionen (Opciones) ändern.",
+    },
+    it: {
+      language: "Lingua",
+      eyebrow: "Fisica cooperativa · 1–4 giocatori",
+      pitch: "Un gioco cooperativo di traslochi basato sulla fisica. Portate il divano in due, non rompete il vaso e caricate tutto sul camion.",
+      latest: "Ultima versione",
+      released: "Pubblicata il {date} · {size}",
+      download: "Scarica",
+      gameLang: "Per ora il gioco è in spagnolo.",
+      loading: "Caricamento…",
+      soonTitle: "Prossimamente",
+      soonText: "Non è stata ancora pubblicata nessuna versione. Torna presto!",
+      apiError: "Impossibile caricare l'elenco delle versioni. Il pulsante scarica comunque l'ultima.",
+      whatsNew: "Novità",
+      friendsTitle: "Giocare con gli amici",
+      friendsRemote: "Ognuno a casa propria? Usate Radmin VPN o ZeroTier con l'IP che vi dà, oppure aprite la porta UDP 7777 sul router dell'host.",
+      friendsVersion: "Serve a tutti la stessa versione. Fino a 4 giocatori per partita.",
+      smartscreen: "Se compare “PC protetto da Windows”: Ulteriori informazioni → Esegui comunque.",
+      controls: "Comandi",
+      ctlMove: "Muoversi", ctlRun: "Correre", ctlJump: "Saltare", ctlGrab: "Afferrare (tieni premuto)",
+      ctlRotate: "Ruotare ciò che tieni",
+      ctlUse: "Usare",
+      ctlCrouch: "Accovacciarsi (tieni premuto)", ctlView: "Cambiare visuale",
+      keySpace: "Spazio", keyLeft: "Clic sinistro", keyRight: "Clic destro", keyRotate: "R + mouse",
+      history: "Cronologia delle versioni",
+      downloadThis: "Scarica questa versione",
+      noNotes: "Nessuna nota per questa versione.",
+      footer: "Realizzato con Godot 4",
+      downloadFor: "Scarica per {os}",
+      otherPlatforms: "Anche per:",
+      hintWindows: "Nessuna installazione: apri {file}. Per aggiornare, scarica la nuova versione e sostituisci il file.",
+      hintLinux: "Rendilo eseguibile (chmod +x {file}) e aprilo.",
+      hintMac: "Estrai l'archivio e apri l'app. La prima volta macOS la bloccherà: Impostazioni di Sistema → Privacy e sicurezza → Apri comunque.",
+      friends1: "Uno clicca su <b>Crear partida</b> (Crea partita) e poi su <b>Crear</b>, e consente l'accesso nel firewall.",
+      friends2: "Il suo IP compare nel menu di pausa (<b>Esc</b>); <b>Copiar IP</b> (Copia IP) lo copia per condividerlo.",
+      friends3: "Gli altri cliccano su <b>Unirse a una partida</b> (Unisciti a una partita), inseriscono quell'IP e cliccano su <b>Unirse</b> (Unisciti).",
+      solo: "Nessuno con cui giocare? <b>Jugar solo</b> (Gioca da solo): hai il doppio della forza ed Esc mette davvero in pausa il gioco.",
+      ctlKick: "Calciare",
+      ctlChat: "Chat testuale",
+      ctlTalk: "Parlare (chat vocale di prossimità)",
+      ctlMenu: "Menu / pausa",
+      ctlFps: "Contatore FPS",
+      rebind: "Puoi cambiare tutti i tasti in Opzioni (Opciones).",
+    },
+    pl: {
+      language: "Język",
+      eyebrow: "Fizyka w kooperacji · 1–4 graczy",
+      pitch: "Kooperacyjna gra o przeprowadzkach z fizyką. Nieście kanapę we dwóch, nie stłuczcie wazonu i załadujcie wszystko do ciężarówki.",
+      latest: "Najnowsza wersja",
+      released: "Opublikowano {date} · {size}",
+      download: "Pobierz",
+      gameLang: "Na razie gra jest w języku hiszpańskim.",
+      loading: "Ładowanie…",
+      soonTitle: "Już wkrótce",
+      soonText: "Nie opublikowano jeszcze żadnej wersji. Zajrzyj wkrótce!",
+      apiError: "Nie udało się wczytać listy wersji. Przycisk i tak pobiera najnowszą.",
+      whatsNew: "Nowości",
+      friendsTitle: "Gra ze znajomymi",
+      friendsRemote: "Każdy u siebie w domu? Użyjcie Radmin VPN lub ZeroTier i adresu IP, który poda, albo otwórzcie port UDP 7777 na routerze hosta.",
+      friendsVersion: "Wszyscy potrzebują tej samej wersji. Maksymalnie 4 graczy.",
+      smartscreen: "Jeśli Windows pokaże „System Windows ochronił Twój komputer”: Więcej informacji → Uruchom mimo to.",
+      controls: "Sterowanie",
+      ctlMove: "Ruch", ctlRun: "Bieg", ctlJump: "Skok", ctlGrab: "Chwyć (przytrzymaj)",
+      ctlRotate: "Obróć trzymany przedmiot",
+      ctlUse: "Użyj",
+      ctlCrouch: "Kucnij (przytrzymaj)", ctlView: "Zmień widok",
+      keySpace: "Spacja", keyLeft: "LPM", keyRight: "PPM", keyRotate: "R + mysz",
+      history: "Historia wersji",
+      downloadThis: "Pobierz tę wersję",
+      noNotes: "Brak informacji o tej wersji.",
+      footer: "Stworzone w Godot 4",
+      downloadFor: "Pobierz na {os}",
+      otherPlatforms: "Również na:",
+      hintWindows: "Nie trzeba nic instalować: otwórz {file}. Aby zaktualizować, pobierz nową wersję i zastąp plik.",
+      hintLinux: "Nadaj mu prawo wykonywania (chmod +x {file}) i uruchom.",
+      hintMac: "Rozpakuj i otwórz aplikację. Za pierwszym razem macOS ją zablokuje: Ustawienia systemowe → Prywatność i ochrona → Otwórz mimo to.",
+      friends1: "Jedna osoba klika <b>Crear partida</b> (Utwórz grę), potem <b>Crear</b>, i zezwala na dostęp w zaporze.",
+      friends2: "Jej adres IP widać w menu pauzy (<b>Esc</b>); <b>Copiar IP</b> (Kopiuj IP) kopiuje go do udostępnienia.",
+      friends3: "Pozostali klikają <b>Unirse a una partida</b> (Dołącz do gry), wpisują ten adres IP i klikają <b>Unirse</b> (Dołącz).",
+      solo: "Nie masz z kim grać? <b>Jugar solo</b> (Graj sam): masz dwa razy więcej siły, a Esc naprawdę pauzuje grę.",
+      ctlKick: "Kopnij",
+      ctlChat: "Czat tekstowy",
+      ctlTalk: "Mów (czat głosowy zbliżeniowy)",
+      ctlMenu: "Menu / pauza",
+      ctlFps: "Licznik FPS",
+      rebind: "Wszystkie klawisze zmienisz w Opcjach (Opciones).",
+    },
+    tr: {
+      language: "Dil",
+      eyebrow: "Fizikli ortak oyun · 1–4 oyuncu",
+      pitch: "Fizik tabanlı, birlikte oynanan bir taşınma oyunu. Kanepeyi birlikte taşıyın, vazoyu kırmayın ve her şeyi kamyona yükleyin.",
+      latest: "En son sürüm",
+      released: "{date} tarihinde yayınlandı · {size}",
+      download: "İndir",
+      gameLang: "Oyun şimdilik İspanyolca.",
+      loading: "Yükleniyor…",
+      soonTitle: "Çok yakında",
+      soonText: "Henüz yayınlanmış bir sürüm yok. Yakında tekrar bakın!",
+      apiError: "Sürüm listesi yüklenemedi. Düğme yine de en son sürümü indirir.",
+      whatsNew: "Yenilikler",
+      friendsTitle: "Arkadaşlarla oyna",
+      friendsRemote: "Herkes kendi evinde mi? Radmin VPN veya ZeroTier kullanıp verdiği IP'yi girin ya da sunucunun modeminde UDP 7777 portunu açın.",
+      friendsVersion: "Herkesin aynı sürüme sahip olması gerekir. En fazla 4 oyuncu.",
+      smartscreen: "Windows “bilgisayarınızı korudu” uyarısı verirse: Ek bilgi → Yine de çalıştır.",
+      controls: "Kontroller",
+      ctlMove: "Hareket", ctlRun: "Koş", ctlJump: "Zıpla", ctlGrab: "Tut (basılı tut)",
+      ctlRotate: "Tuttuğunu döndür",
+      ctlUse: "Kullan",
+      ctlCrouch: "Eğil (basılı tut)", ctlView: "Görünümü değiştir",
+      keySpace: "Boşluk", keyLeft: "Sol tık", keyRight: "Sağ tık", keyRotate: "R + fare",
+      history: "Sürüm geçmişi",
+      downloadThis: "Bu sürümü indir",
+      noNotes: "Bu sürüm için not yok.",
+      footer: "Godot 4 ile yapıldı",
+      downloadFor: "{os} için indir",
+      otherPlatforms: "Ayrıca:",
+      hintWindows: "Kurulum gerekmez: {file} dosyasını aç. Güncellemek için yeni sürümü indirip dosyanın üzerine yaz.",
+      hintLinux: "Çalıştırma izni ver (chmod +x {file}) ve aç.",
+      hintMac: "Arşivi aç ve uygulamayı başlat. İlk seferde macOS engelleyecek: Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç.",
+      friends1: "Bir kişi <b>Crear partida</b> (Oyun oluştur), ardından <b>Crear</b> düğmesine tıklar ve güvenlik duvarında erişime izin verir.",
+      friends2: "IP adresi duraklatma menüsünde (<b>Esc</b>) görünür; <b>Copiar IP</b> (IP'yi kopyala) paylaşmak için kopyalar.",
+      friends3: "Diğerleri <b>Unirse a una partida</b> (Oyuna katıl) düğmesine tıklar, bu IP'yi yazar ve <b>Unirse</b> (Katıl) düğmesine tıklar.",
+      solo: "Birlikte oynayacak kimse yok mu? <b>Jugar solo</b> (Tek başına oyna): iki kat güçlüsün ve Esc oyunu gerçekten duraklatır.",
+      ctlKick: "Tekmele",
+      ctlChat: "Yazılı sohbet",
+      ctlTalk: "Konuş (yakınlık sesli sohbeti)",
+      ctlMenu: "Menü / duraklat",
+      ctlFps: "FPS sayacı",
+      rebind: "Tüm tuşları Seçenekler'den (Opciones) değiştirebilirsin.",
+    },
+    ru: {
+      language: "Язык",
+      eyebrow: "Кооператив с физикой · 1–4 игрока",
+      pitch: "Кооперативная игра про переезды с физикой. Несите диван вдвоём, не разбейте вазу и погрузите всё в грузовик.",
+      latest: "Последняя версия",
+      released: "Опубликовано {date} · {size}",
+      download: "Скачать",
+      gameLang: "Пока игра доступна только на испанском.",
+      loading: "Загрузка…",
+      soonTitle: "Скоро",
+      soonText: "Пока не опубликовано ни одной версии. Загляните позже!",
+      apiError: "Не удалось загрузить список версий. Кнопка всё равно скачает последнюю.",
+      whatsNew: "Что нового",
+      friendsTitle: "Игра с друзьями",
+      friendsRemote: "Каждый у себя дома? Используйте Radmin VPN или ZeroTier и выданный ими IP либо откройте UDP-порт 7777 на роутере хоста.",
+      friendsVersion: "У всех должна быть одна и та же версия. До 4 игроков.",
+      smartscreen: "Если Windows сообщает, что «защитила ваш компьютер»: Подробнее → Выполнить в любом случае.",
+      controls: "Управление",
+      ctlMove: "Движение", ctlRun: "Бег", ctlJump: "Прыжок", ctlGrab: "Схватить (удерживать)",
+      ctlRotate: "Повернуть то, что держите",
+      ctlUse: "Использовать",
+      ctlCrouch: "Присесть (удерживать)", ctlView: "Сменить вид",
+      keySpace: "Пробел", keyLeft: "ЛКМ", keyRight: "ПКМ", keyRotate: "R + мышь",
+      history: "История версий",
+      downloadThis: "Скачать эту версию",
+      noNotes: "Нет заметок к этой версии.",
+      footer: "Сделано на Godot 4",
+      downloadFor: "Скачать для {os}",
+      otherPlatforms: "Также для:",
+      hintWindows: "Устанавливать ничего не нужно: откройте {file}. Чтобы обновить, скачайте новую версию и замените файл.",
+      hintLinux: "Сделайте файл исполняемым (chmod +x {file}) и запустите его.",
+      hintMac: "Распакуйте архив и откройте приложение. В первый раз macOS его заблокирует: Системные настройки → Конфиденциальность и безопасность → Всё равно открыть.",
+      friends1: "Один игрок нажимает <b>Crear partida</b> (Создать игру), затем <b>Crear</b> и разрешает доступ в брандмауэре.",
+      friends2: "Его IP видно в меню паузы (<b>Esc</b>); кнопка <b>Copiar IP</b> (Копировать IP) копирует его, чтобы отправить друзьям.",
+      friends3: "Остальные нажимают <b>Unirse a una partida</b> (Присоединиться к игре), вводят этот IP и нажимают <b>Unirse</b> (Присоединиться).",
+      solo: "Не с кем играть? <b>Jugar solo</b> (Играть одному): вы вдвое сильнее, а Esc по-настоящему ставит игру на паузу.",
+      ctlKick: "Пнуть",
+      ctlChat: "Текстовый чат",
+      ctlTalk: "Говорить (голосовой чат по близости)",
+      ctlMenu: "Меню / пауза",
+      ctlFps: "Счётчик FPS",
+      rebind: "Все клавиши можно поменять в настройках (Opciones).",
+    },
+    zh: {
+      language: "语言",
+      eyebrow: "物理合作 · 1–4 名玩家",
+      pitch: "一款基于物理的合作搬家游戏。两人一起抬沙发，别打碎花瓶，把所有东西都装上卡车。",
+      latest: "最新版本",
+      released: "发布于 {date} · {size}",
+      download: "下载",
+      gameLang: "游戏目前为西班牙语。",
+      loading: "加载中…",
+      soonTitle: "即将推出",
+      soonText: "还没有发布任何版本，敬请期待！",
+      apiError: "无法加载版本列表。按钮仍会下载最新版本。",
+      whatsNew: "更新内容",
+      friendsTitle: "和朋友一起玩",
+      friendsRemote: "不在同一个网络？使用 Radmin VPN 或 ZeroTier 提供的 IP，或在主机的路由器上开放 UDP 7777 端口。",
+      friendsVersion: "所有人需要相同的版本。每局最多 4 名玩家。",
+      smartscreen: "如果 Windows 提示“Windows 已保护你的电脑”：点击“更多信息”→“仍要运行”。",
+      controls: "操作",
+      ctlMove: "移动", ctlRun: "奔跑", ctlJump: "跳跃", ctlGrab: "抓取（按住）",
+      ctlRotate: "旋转手中的物品",
+      ctlUse: "使用",
+      ctlCrouch: "蹲下（按住）", ctlView: "切换视角",
+      keySpace: "空格", keyLeft: "鼠标左键", keyRight: "鼠标右键", keyRotate: "R + 鼠标",
+      history: "版本历史",
+      downloadThis: "下载此版本",
+      noNotes: "此版本没有更新说明。",
+      footer: "使用 Godot 4 制作",
+      downloadFor: "下载 {os} 版",
+      otherPlatforms: "其他平台：",
+      hintWindows: "无需安装：直接打开 {file}。更新时下载新版本并替换该文件即可。",
+      hintLinux: "赋予执行权限（chmod +x {file}）后打开。",
+      hintMac: "解压后打开应用。首次打开时 macOS 会阻止它：系统设置 → 隐私与安全性 → 仍要打开。",
+      friends1: "一名玩家点击 <b>Crear partida</b>（创建游戏），再点击 <b>Crear</b>，并在防火墙中允许访问。",
+      friends2: "他的 IP 会显示在暂停菜单（<b>Esc</b>）中；点击 <b>Copiar IP</b>（复制 IP）即可复制并分享。",
+      friends3: "其他人点击 <b>Unirse a una partida</b>（加入游戏），输入该 IP，然后点击 <b>Unirse</b>（加入）。",
+      solo: "没人一起玩？选择 <b>Jugar solo</b>（单人游戏）：你的力气翻倍，按 Esc 会真正暂停游戏。",
+      ctlKick: "踢",
+      ctlChat: "文字聊天",
+      ctlTalk: "说话（近距离语音聊天）",
+      ctlMenu: "菜单 / 暂停",
+      ctlFps: "帧率显示",
+      rebind: "所有按键都可以在“选项”（Opciones）中修改。",
+    },
+    ja: {
+      language: "言語",
+      eyebrow: "物理演算 協力プレイ · 1〜4人",
+      pitch: "物理演算で遊ぶ協力型の引っ越しゲーム。ソファは2人で運び、花瓶は割らずに、すべてをトラックに積み込もう。",
+      latest: "最新バージョン",
+      released: "{date} 公開 · {size}",
+      download: "ダウンロード",
+      gameLang: "現在、ゲームはスペイン語のみです。",
+      loading: "読み込み中…",
+      soonTitle: "近日公開",
+      soonText: "まだ公開されているバージョンはありません。お楽しみに！",
+      apiError: "バージョン一覧を読み込めませんでした。ボタンからは最新版をダウンロードできます。",
+      whatsNew: "新着情報",
+      friendsTitle: "友だちと遊ぶ",
+      friendsRemote: "別々の場所から遊ぶ場合は、Radmin VPN や ZeroTier で表示される IP を使うか、ホストのルーターで UDP 7777 番ポートを開放してください。",
+      friendsVersion: "全員が同じバージョンを使う必要があります。最大4人まで遊べます。",
+      smartscreen: "「WindowsによってPCが保護されました」と表示されたら：詳細情報 → 実行。",
+      controls: "操作方法",
+      ctlMove: "移動", ctlRun: "走る", ctlJump: "ジャンプ", ctlGrab: "つかむ（長押し）",
+      ctlRotate: "持っている物を回す",
+      ctlUse: "使う",
+      ctlCrouch: "しゃがむ（長押し）", ctlView: "視点切り替え",
+      keySpace: "スペース", keyLeft: "左クリック", keyRight: "右クリック", keyRotate: "R + マウス",
+      history: "バージョン履歴",
+      downloadThis: "このバージョンをダウンロード",
+      noNotes: "このバージョンにはメモがありません。",
+      footer: "Godot 4 で制作",
+      downloadFor: "{os} 版をダウンロード",
+      otherPlatforms: "その他：",
+      hintWindows: "インストール不要：{file} を開くだけです。更新するときは新しいバージョンをダウンロードしてファイルを置き換えます。",
+      hintLinux: "実行権限を付けて（chmod +x {file}）開いてください。",
+      hintMac: "展開してアプリを開きます。初回は macOS にブロックされるので、システム設定 → プライバシーとセキュリティ → 「このまま開く」を選んでください。",
+      friends1: "1人が <b>Crear partida</b>（ゲームを作成）、続けて <b>Crear</b> を押し、ファイアウォールでアクセスを許可します。",
+      friends2: "その人の IP はポーズメニュー（<b>Esc</b>）に表示されます。<b>Copiar IP</b>（IPをコピー）でコピーして共有できます。",
+      friends3: "ほかの人は <b>Unirse a una partida</b>（ゲームに参加）を押し、その IP を入力して <b>Unirse</b>（参加）を押します。",
+      solo: "一緒に遊ぶ人がいない？ <b>Jugar solo</b>（ひとりで遊ぶ）なら力が2倍になり、Esc で本当にポーズできます。",
+      ctlKick: "蹴る",
+      ctlChat: "テキストチャット",
+      ctlTalk: "話す（近接ボイスチャット）",
+      ctlMenu: "メニュー / ポーズ",
+      ctlFps: "FPS表示",
+      rebind: "すべてのキーは「オプション」（Opciones）で変更できます。",
+    },
+    ko: {
+      language: "언어",
+      eyebrow: "물리 기반 협동 · 1–4인",
+      pitch: "물리 기반 협동 이사 게임. 소파는 둘이서 들고, 꽃병은 깨지 말고, 모든 짐을 트럭에 실으세요.",
+      latest: "최신 버전",
+      released: "{date} 공개 · {size}",
+      download: "다운로드",
+      gameLang: "현재 게임은 스페인어로만 제공됩니다.",
+      loading: "불러오는 중…",
+      soonTitle: "곧 출시",
+      soonText: "아직 공개된 버전이 없습니다. 곧 다시 확인해 주세요!",
+      apiError: "버전 목록을 불러오지 못했습니다. 버튼으로는 최신 버전을 계속 다운로드할 수 있습니다.",
+      whatsNew: "새로운 기능",
+      friendsTitle: "친구와 함께 플레이",
+      friendsRemote: "각자 다른 곳에서 플레이하나요? Radmin VPN이나 ZeroTier에서 받은 IP를 쓰거나, 호스트 공유기에서 UDP 7777 포트를 여세요.",
+      friendsVersion: "모두 같은 버전이 필요합니다. 최대 4명까지 플레이할 수 있습니다.",
+      smartscreen: "'Windows의 PC 보호' 경고가 나오면: 추가 정보 → 실행.",
+      controls: "조작법",
+      ctlMove: "이동", ctlRun: "달리기", ctlJump: "점프", ctlGrab: "잡기(누르고 있기)",
+      ctlRotate: "들고 있는 물건 회전",
+      ctlUse: "사용",
+      ctlCrouch: "앉기(누르고 있기)", ctlView: "시점 전환",
+      keySpace: "스페이스", keyLeft: "좌클릭", keyRight: "우클릭", keyRotate: "R + 마우스",
+      history: "버전 기록",
+      downloadThis: "이 버전 다운로드",
+      noNotes: "이 버전에 대한 메모가 없습니다.",
+      footer: "Godot 4로 제작",
+      downloadFor: "{os}용 다운로드",
+      otherPlatforms: "다른 플랫폼:",
+      hintWindows: "설치할 필요 없이 {file}을(를) 실행하세요. 업데이트하려면 새 버전을 받아 파일을 교체하세요.",
+      hintLinux: "실행 권한을 준 뒤(chmod +x {file}) 실행하세요.",
+      hintMac: "압축을 풀고 앱을 여세요. 처음에는 macOS가 차단하니 시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기를 누르세요.",
+      friends1: "한 명이 <b>Crear partida</b>(게임 만들기)를 누른 다음 <b>Crear</b>를 누르고, 방화벽에서 접근을 허용합니다.",
+      friends2: "그 사람의 IP는 일시정지 메뉴(<b>Esc</b>)에 표시되며, <b>Copiar IP</b>(IP 복사)로 복사해 공유할 수 있습니다.",
+      friends3: "다른 사람들은 <b>Unirse a una partida</b>(게임 참가)를 누르고 그 IP를 입력한 뒤 <b>Unirse</b>(참가)를 누릅니다.",
+      solo: "같이 할 사람이 없나요? <b>Jugar solo</b>(혼자 하기)에서는 힘이 두 배가 되고 Esc로 게임이 실제로 일시정지됩니다.",
+      ctlKick: "차기",
+      ctlChat: "텍스트 채팅",
+      ctlTalk: "말하기(근거리 음성 채팅)",
+      ctlMenu: "메뉴 / 일시정지",
+      ctlFps: "FPS 표시",
+      rebind: "모든 키는 옵션(Opciones)에서 바꿀 수 있습니다.",
+    },
+  };
+
+  const CONTROLS = [
+    ["WASD", "ctlMove"], ["Shift", "ctlRun"], ["@keySpace", "ctlJump"],
+    ["@keyLeft", "ctlGrab"], ["@keyRight", "ctlKick"], ["@keyRotate", "ctlRotate"],
+    ["Ctrl", "ctlCrouch"], ["E", "ctlUse"], ["V", "ctlView"],
+    ["T", "ctlChat"], ["B", "ctlTalk"], ["Esc", "ctlMenu"], ["F3", "ctlFps"],
+  ];
+  const SHOTS = [
+    ["screenshots/pool.webp", "altPool"],
+    ["screenshots/truck.webp", "altTruck"], ["screenshots/living-room.webp", "altLiving"],
+    ["screenshots/carrying.webp", "altCarry"], ["screenshots/menu.webp", "altMenu"],
+  ];
+
+  // Versiones de ejemplo para la vista previa en local.
+  const demoAssets = sizes => Object.values(PLATFORMS).map((p, i) => ({ name: p.file, size: sizes[i] * 1048576, browser_download_url: "#" }));
+  const DEMO_RELEASES = [
+    {
+      tag_name: "v0.3.0", draft: false, published_at: "2026-09-26T00:00:00Z",
+      assets: demoAssets([137, 77, 103]),
+      body: "Chalet con piscina, personajes, sonido, chat y modo de un jugador.\n- Nuevo nivel: el chalet de los García, con dos plantas, escalera, balcón y piscina.",
+    },
+    {
+      tag_name: "v0.2.0", draft: false, published_at: "2026-09-23T18:00:00Z",
+      assets: demoAssets([104, 58, 70]),
+      body: "Girar, patear y chocar entre jugadores.\n- R + ratón gira lo que llevas; lo pesado cuesta más.",
+    },
+    {
+      tag_name: "v0.1.0", draft: false, published_at: "2026-09-23T12:00:00Z",
+      assets: demoAssets([104, 58, 70]),
+      body: "Primera versión jugable.\n- Mudanza cooperativa de hasta 4 jugadores con físicas.",
+    },
+  ];
+
+  let lang = "en";
+  let releases = null;       // null = cargando, [] = ninguna publicada
+  let loadFailed = false;
+
+  const $ = id => document.getElementById(id);
+  const t = (key, vars) => {
+    let s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
+    for (const [k, v] of Object.entries(vars || {})) s = s.replaceAll(`{${k}}`, v);
+    return s;
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmtDate = iso => new Date(iso).toLocaleDateString(LOCALES[lang], { day: "numeric", month: "long", year: "numeric" });
+  const fmtSize = bytes => bytes ? `${Math.round(bytes / 1048576).toLocaleString(LOCALES[lang])} MB` : "";
+
+  function storage(key, value) {
+    try {
+      if (value === undefined) return localStorage.getItem(key);
+      localStorage.setItem(key, value);
+    } catch (e) { /* almacenamiento no disponible: no pasa nada */ }
+    return null;
+  }
+
+  function detectLang() {
+    const wanted = [params.get("lang"), storage("lang"), ...(navigator.languages || [navigator.language])];
+    for (const code of wanted) {
+      const base = (code || "").toLowerCase().split("-")[0];
+      if (I18N[base]) return base;
+    }
+    return "en";
+  }
+
+  function renderNotes(text) {
+    const lines = (text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (!lines.length) return `<p>${esc(t("noNotes"))}</p>`;
+    let html = "", inList = false;
+    for (const line of lines) {
+      const item = line.match(/^[-*•]\s+(.*)/);
+      if (item && !inList) { html += "<ul>"; inList = true; }
+      if (!item && inList) { html += "</ul>"; inList = false; }
+      html += item ? `<li>${esc(item[1])}</li>` : `<p>${esc(line.replace(/^#+\s*/, ""))}</p>`;
+    }
+    return html + (inList ? "</ul>" : "");
+  }
+
+  const assetFor = (release, platform) => (release.assets || []).find(a => a.name === PLATFORMS[platform].file);
+  const assetUrl = (release, platform) => {
+    const asset = assetFor(release, platform);
+    return asset && !DEMO ? asset.browser_download_url : "#";
+  };
+
+  function renderStatic() {
+    const current = PLATFORMS[PLATFORM];
+    document.documentElement.lang = lang;
+    document.title = `Get a Move On! — ${t("download")}`;
+    document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    $("download-label").textContent = t("downloadFor", { os: current.os });
+    $("hint").innerHTML = esc(t(current.hint)).replace("{file}", `<code>${esc(current.file)}</code>`);
+    $("smartscreen").hidden = PLATFORM !== "windows";
+    $("game-lang").hidden = lang === "es";
+    $("demo").hidden = !DEMO;
+    $("controls").innerHTML = CONTROLS.map(([key, action]) =>
+      `<div class="control"><kbd>${esc(key.startsWith("@") ? t(key.slice(1)) : key)}</kbd><span>${esc(t(action))}</span></div>`
+    ).join("");
+    $("shots").innerHTML = SHOTS.map(([src, alt], i) =>
+      `<a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${esc(t(alt))}" width="1280" height="720" ${i ? 'loading="lazy"' : ""}></a>`
+    ).join("");
+  }
+
+  function renderReleases() {
+    const badge = $("badge"), download = $("download");
+    const hasRelease = releases && releases.length > 0;
+    badge.classList.toggle("soon", releases !== null && !hasRelease && !loadFailed);
+    download.removeAttribute("aria-disabled");
+    download.href = latestUrl(PLATFORM);  // funciona aunque falle la API
+    // Los otros sistemas, en pequeño debajo del botón.
+    const others = Object.keys(PLATFORMS).filter(p => p !== PLATFORM);
+    const otherUrl = p => hasRelease ? assetUrl(releases[0], p) : latestUrl(p);
+    $("also").hidden = releases !== null && !hasRelease && !loadFailed;
+    $("also").innerHTML = `${esc(t("otherPlatforms"))} ` +
+      others.map(p => `<a href="${esc(otherUrl(p))}">${esc(PLATFORMS[p].os)}</a>`).join(" · ");
+    $("news-card").hidden = !hasRelease;
+    $("history-card").hidden = !hasRelease;
+
+    if (releases === null) {
+      badge.textContent = t("latest");
+      $("version").textContent = "—";
+      $("meta").textContent = t(loadFailed ? "apiError" : "loading");
+      return;
+    }
+    if (!hasRelease) {
+      badge.textContent = t("soonTitle");
+      $("version").textContent = "—";
+      $("meta").textContent = t("soonText");
+      download.setAttribute("aria-disabled", "true");
+      download.removeAttribute("href");
+      return;
+    }
+
+    const latest = releases[0];
+    const file = assetFor(latest, PLATFORM);
+    badge.textContent = t("latest");
+    $("version").textContent = latest.tag_name;
+    $("meta").textContent = t("released", { date: fmtDate(latest.published_at), size: fmtSize(file && file.size) })
+      .replace(/ · $/, "");
+    if (file && !DEMO) download.href = file.browser_download_url;
+    $("news").innerHTML = renderNotes(latest.body);
+    // Todas las versiones jugables, cada una con su archivo para cada sistema.
+    $("history").innerHTML = releases.map((release, i) => {
+      const links = Object.keys(PLATFORMS).filter(p => assetFor(release, p))
+        .map(p => `<a href="${esc(assetUrl(release, p))}">${esc(PLATFORMS[p].os)}</a>`).join("");
+      const block = i > 0 && links ? `<div class="platform-links">${esc(t("downloadThis"))}: ${links}</div>` : "";
+      return `<div class="release-item">
+        <div class="release-head"><span class="release-tag">${esc(release.tag_name)}</span>
+        <span class="release-date">${esc(fmtDate(release.published_at))}</span></div>
+        <div class="notes">${renderNotes(release.body)}</div>${block}</div>`;
+    }).join("");
+  }
+
+  function setLang(code) {
+    lang = I18N[code] ? code : "en";
+    $("lang-select").value = lang;
+    renderStatic();
+    renderReleases();
+  }
+
+  $("lang-select").innerHTML = Object.entries(LANGS)
+    .map(([code, name]) => `<option value="${code}">${name}</option>`).join("");
+  $("lang-select").addEventListener("change", e => {
+    storage("lang", e.target.value);
+    setLang(e.target.value);
+  });
+  setLang(detectLang());
+
+  if (DEMO) {
+    releases = DEMO_RELEASES;
+    renderReleases();
+  } else {
+    fetch(`https://api.github.com/repos/${OWNER}/${REPO}/releases?per_page=30`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(list => { releases = list.filter(r => !r.draft); renderReleases(); })
+      .catch(() => { loadFailed = true; renderReleases(); });
+  }
+</script>
+</body>
+</html>
