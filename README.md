@@ -21,10 +21,11 @@ Page: https://dreufter.github.io/get-a-move-on-web/
 
 1. In the game project, export the three presets (Windows Desktop, Linux, macOS) into `build/`.
 2. Create a release with a tag like `v0.4.0` and attach the three files with the names above. The first line of the notes is shown in bold; lines starting with `- ` become a list.
+3. Add the notes of that version, translated into the 12 languages, and its date to `release-notes.json`. The page shows them in the visitor's language (falling back to English, then to the release notes on GitHub).
 
 ## Languages
 
-The page detects the visitor's language (English, Español, Português, Français, Deutsch, Italiano, Polski, Türkçe, Русский, 中文, 日本語, 한국어) and remembers the one picked in the selector. `?lang=xx` forces one and `?os=windows|macos|linux` forces a system. Release notes are shown as written.
+The page detects the visitor's language (English, Español, Português, Français, Deutsch, Italiano, Polski, Türkçe, Русский, 中文, 日本語, 한국어) and remembers the one picked in the selector. `?lang=xx` forces one and `?os=windows|macos|linux` forces a system. Release notes come translated from `release-notes.json`.
 
 ## Local preview
 

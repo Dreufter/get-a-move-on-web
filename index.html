@@ -832,6 +832,9 @@
   let lang = "en";
   let releases = null;       // null = cargando, [] = ninguna publicada
   let loadFailed = false;
+  // Notas de cada versión traducidas y su fecha real (release-notes.json). Si falta
+  // una versión o un idioma, se usa el inglés y, si no, lo que diga GitHub.
+  let translatedNotes = {};
 
   const $ = id => document.getElementById(id);
   const t = (key, vars) => {
@@ -872,6 +875,12 @@
     }
     return html + (inList ? "</ul>" : "");
   }
+
+  const notesOf = release => {
+    const notes = (translatedNotes[release.tag_name] || {}).notes || {};
+    return notes[lang] || notes.en || release.body;
+  };
+  const dateOf = release => (translatedNotes[release.tag_name] || {}).date || release.published_at;
 
   const assetFor = (release, platform) => (release.assets || []).find(a => a.name === PLATFORMS[platform].file);
   const assetUrl = (release, platform) => {
@@ -932,19 +941,19 @@
     const file = assetFor(latest, PLATFORM);
     badge.textContent = t("latest");
     $("version").textContent = latest.tag_name;
-    $("meta").textContent = t("released", { date: fmtDate(latest.published_at), size: fmtSize(file && file.size) })
+    $("meta").textContent = t("released", { date: fmtDate(dateOf(latest)), size: fmtSize(file && file.size) })
       .replace(/ · $/, "");
     if (file && !DEMO) download.href = file.browser_download_url;
-    $("news").innerHTML = renderNotes(latest.body);
+    $("news").innerHTML = renderNotes(notesOf(latest));
     // Todas las versiones jugables, cada una con su archivo para cada sistema.
     $("history").innerHTML = releases.map((release, i) => {
       const links = Object.keys(PLATFORMS).filter(p => assetFor(release, p))
-        .map(p => `<a href="${esc(assetUrl(release, p))}">${esc(PLATFORMS[p].os)}</a>`).join("");
+        .map(p => `<a href="${esc(assetUrl(release, p))}">${esc(PLATFORMS[p].os)}</a>`).join(" · ");
       const block = i > 0 && links ? `<div class="platform-links">${esc(t("downloadThis"))}: ${links}</div>` : "";
       return `<div class="release-item">
         <div class="release-head"><span class="release-tag">${esc(release.tag_name)}</span>
-        <span class="release-date">${esc(fmtDate(release.published_at))}</span></div>
-        <div class="notes">${renderNotes(release.body)}</div>${block}</div>`;
+        <span class="release-date">${esc(fmtDate(dateOf(release)))}</span></div>
+        <div class="notes">${renderNotes(notesOf(release))}</div>${block}</div>`;
     }).join("");
   }
 
@@ -962,6 +971,12 @@
     setLang(e.target.value);
   });
   setLang(detectLang());
+
+  // Las notas traducidas llegan aparte; al llegar se vuelven a pintar las versiones.
+  fetch("release-notes.json")
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(data => { translatedNotes = data || {}; renderReleases(); })
+    .catch(() => { /* sin traducciones: se ven las notas de GitHub */ });
 
   if (DEMO) {
     releases = DEMO_RELEASES;
