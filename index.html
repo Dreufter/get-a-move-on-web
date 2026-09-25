@@ -98,10 +98,14 @@
   .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--cardboard-dark); }
   .btn[aria-disabled="true"] { background: #3a4460; color: #8792ad; box-shadow: none; pointer-events: none; }
   .btn svg { width: 20px; height: 20px; }
-  .downloads { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px; }
+  .downloads {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
+    max-width: 640px; margin: 0 auto;
+  }
+  .downloads .btn { justify-content: center; padding-left: 14px; padding-right: 14px; }
   .btn small { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: none; opacity: .75; }
   .btn.secondary {
-    padding: 12px 24px; background: transparent; color: var(--cardboard);
+    padding-top: 12px; padding-bottom: 12px; background: transparent; color: var(--cardboard);
     border: 2px solid rgba(242, 140, 40, .55); box-shadow: 0 5px 0 rgba(0, 0, 0, .35);
   }
   .btn.secondary:hover { background: rgba(242, 140, 40, .14); box-shadow: 0 7px 0 rgba(0, 0, 0, .35); }
@@ -167,8 +171,7 @@
     .card { padding: 20px 16px; }
     .shots { grid-template-columns: 1fr; }
     .version { font-size: 32px; }
-    .downloads { flex-direction: column; align-items: stretch; }
-    .downloads .btn { justify-content: center; }
+    .downloads { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
     .btn, .shots img { transition: none; }
@@ -907,10 +910,11 @@
       const primary = p === PLATFORM;
       const asset = latest && assetFor(latest, p);
       const url = asset ? (DEMO ? "#" : asset.browser_download_url) : latestUrl(p);
-      const label = primary ? t("downloadFor", { os: PLATFORMS[p].os }) : PLATFORMS[p].os;
       const size = asset ? `<small>${esc(fmtSize(asset.size))}</small>` : "";
       const link = disabled ? 'aria-disabled="true"' : `href="${esc(url)}"`;
-      return `<a class="btn${primary ? "" : " secondary"}" ${link}>${DOWNLOAD_ICON}<span>${esc(label)}</span>${size}</a>`;
+      const label = esc(t("downloadFor", { os: PLATFORMS[p].os }));
+      return `<a class="btn${primary ? "" : " secondary"}" ${link} title="${label}" aria-label="${label}">` +
+        `${DOWNLOAD_ICON}<span>${esc(PLATFORMS[p].os)}</span>${size}</a>`;
     }).join("");
   }
 
