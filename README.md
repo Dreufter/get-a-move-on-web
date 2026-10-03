@@ -16,6 +16,7 @@ Page: https://dreufter.github.io/get-a-move-on-web/
   - `GetAMoveOn-macos.zip` — macOS (Intel and Apple Silicon), the `.app` zipped because macOS apps are folders.
 - The big button downloads the latest release for the visitor's system (`releases/latest/download/<file>`), even if the GitHub API fails; the other systems are linked right below it.
 - Each release shows its notes under "What's new" and, with its three downloads, in the version history.
+- The page looks like the game's menus (cardboard panels with packing tape, paper-label buttons, Lilita One). Behind the top runs `media/hero.webm` / `media/hero.mp4`, a loop of the menu's background scenes recorded from the game; it is not downloaded when the visitor asks for reduced motion or to save data (then `media/hero-poster.webp` shows and a button plays it), and it pauses when scrolled out of view.
 
 ## Publishing a new version
 
