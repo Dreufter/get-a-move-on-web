@@ -34,6 +34,7 @@
     --light: #fff6e6;
     --outline: #3a1d08;
     --stamp-green: #23511f;
+    --floor-top: rgba(22, 15, 10, .92);
     --stamp-red: #8e2a1c;
     --display: "Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif;
     --text: Nunito, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -48,7 +49,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: radial-gradient(1000px 600px at 50% 120%, #3a2b1d 0%, transparent 70%) fixed, var(--bg);
+    background: var(--bg-deep);
     color: var(--light);
     font: 500 16px/1.6 var(--text);
   }
@@ -71,7 +72,7 @@
     content: ""; position: absolute; inset: 0; z-index: -1;
     background:
       linear-gradient(90deg, rgba(29, 21, 14, .74) 0%, rgba(29, 21, 14, .5) 30%, rgba(29, 21, 14, 0) 56%),
-      linear-gradient(180deg, rgba(29, 21, 14, .5) 0%, rgba(29, 21, 14, 0) 16%, rgba(29, 21, 14, 0) 74%, var(--bg) 100%);
+      linear-gradient(180deg, rgba(29, 21, 14, .5) 0%, rgba(29, 21, 14, 0) 16%, rgba(29, 21, 14, 0) 74%, var(--floor-top) 100%);
   }
   .hero-inner { width: 100%; padding: 92px clamp(16px, 5vw, 96px) 84px; }
   .hero-copy { max-width: 560px; }
@@ -196,6 +197,27 @@
   .hint { margin: 16px 0 0 !important; font-size: 14px; line-height: 1.5; }
   .game-lang { margin-top: 6px !important; font-weight: 800; }
 
+  /* --- El resto de la página: el suelo de la casa (la tarima del juego), con lo que hay
+     por ahí de la mudanza asomando entre las cajas --- */
+  .floor {
+    position: relative; overflow: clip;
+    background:
+      radial-gradient(1200px 800px at 50% 0, rgba(255, 214, 160, .07), transparent 70%),
+      linear-gradient(180deg, var(--floor-top) 0, rgba(22, 15, 10, .32) 280px, rgba(22, 15, 10, .3) 75%, rgba(22, 15, 10, .62) 100%),
+      url(media/floor.webp) center top / 800px 800px,
+      var(--bg);
+    box-shadow: inset 0 0 180px rgba(0, 0, 0, .55);
+  }
+  .block { position: relative; }
+  .duo, .shots { position: relative; }
+  .card, .photo { z-index: 1; }
+  .prop {
+    position: absolute; z-index: 0; width: var(--w); height: auto;
+    pointer-events: none; user-select: none;
+    transform: rotate(var(--r, 0deg));
+    filter: drop-shadow(0 4px 3px rgba(0, 0, 0, .45)) drop-shadow(0 14px 16px rgba(0, 0, 0, .4));
+  }
+
   /* --- El resto de la página --- */
   .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 20px 40px; }
   .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; align-items: start; }
@@ -288,8 +310,56 @@
   .chip:active { padding-top: 6px; border-bottom-width: 2px; }
   .chip svg { width: 15px; height: 15px; }
 
+  /* El visor de las capturas: la foto en grande, pegada con cinta, sobre la página oscurecida. */
+  .viewer {
+    max-width: 100vw; max-height: 100vh; padding: 0; overflow: visible;
+    border: 0; background: transparent; color: var(--ink);
+  }
+  .viewer::backdrop { background: rgba(18, 12, 8, .88); backdrop-filter: blur(4px); }
+  .viewer[open] { animation: viewer-in .18s ease-out; }
+  @keyframes viewer-in { from { opacity: 0; transform: scale(.97); } }
+  .viewer-photo {
+    position: relative; margin: 0; padding: 12px 12px 0;
+    background: var(--paper); box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+    transform: rotate(-.5deg);
+  }
+  .viewer-photo::before {
+    content: ""; position: absolute; top: -15px; left: 50%; width: 120px; height: 32px; margin-left: -60px;
+    background: linear-gradient(90deg, transparent 34px, rgba(255, 255, 255, .35) 34px 38px, transparent 38px), var(--tape);
+    box-shadow: inset 1.5px 0 var(--tape-edge), inset -1.5px 0 var(--tape-edge);
+    transform: rotate(2deg);
+  }
+  .viewer-photo img {
+    display: block; width: min(86vw, calc((100vh - 150px) * 16 / 9), 1400px); height: auto;
+    aspect-ratio: 16 / 9; object-fit: cover; background: var(--kraft-light);
+  }
+  .viewer-photo figcaption { padding: 10px 4px 12px; font-size: 16px; font-weight: 800; }
+  .viewer-btn {
+    position: fixed; top: 50%; z-index: 1; display: grid; place-items: center;
+    width: 52px; height: 52px; margin-top: -26px; padding: 0 0 2px; cursor: pointer;
+    background: var(--paper); color: var(--ink);
+    border: 2px solid var(--kraft-dark); border-bottom-width: 5px; border-radius: 9px;
+  }
+  .viewer-btn:hover { background: var(--paper-hover); border-color: var(--accent); }
+  .viewer-btn:active { padding-top: 3px; border-bottom-width: 2px; background: var(--paper-pressed); }
+  .viewer-btn svg { width: 22px; height: 22px; }
+  .viewer-btn.prev { left: clamp(8px, 2vw, 28px); }
+  .viewer-btn.next { right: clamp(8px, 2vw, 28px); }
+  .viewer-btn.close { top: clamp(8px, 2vw, 28px); right: clamp(8px, 2vw, 28px); margin-top: 0; }
+  @media (max-width: 760px) {
+    .viewer-photo { padding: 8px 8px 0; transform: none; }
+    .viewer-photo img { width: calc(100vw - 32px); }
+    .viewer-btn { top: auto; bottom: 16px; margin-top: 0; width: 48px; height: 48px; }
+    .viewer-btn.prev { left: 16px; }
+    .viewer-btn.next { right: 16px; }
+    .viewer-btn.close { top: 16px; bottom: auto; right: 16px; }
+  }
+
   footer { padding: 8px 20px 40px; text-align: center; color: rgba(255, 246, 230, .62); font-size: 14px; font-weight: 700; }
 
+  @media (max-width: 1100px) {
+    .prop { display: none; }
+  }
   @media (max-width: 900px) {
     .duo { grid-template-columns: minmax(0, 1fr); gap: 52px; }
     .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -299,7 +369,7 @@
   @media (max-width: 760px) {
     .hero { align-items: flex-start; min-height: 0; }
     .hero::before {
-      background: linear-gradient(180deg, rgba(29, 21, 14, .6) 0%, rgba(29, 21, 14, .3) 30%, rgba(29, 21, 14, .55) 62%, var(--bg) 100%);
+      background: linear-gradient(180deg, rgba(29, 21, 14, .6) 0%, rgba(29, 21, 14, .3) 30%, rgba(29, 21, 14, .55) 62%, var(--floor-top) 100%);
     }
     .hero-inner { padding: 78px 16px 84px; }
     .title { font-size: min(13.6vw, 72px); }
@@ -316,6 +386,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .btn, .photo { transition: none; }
+    .viewer[open] { animation: none; }
     .photo:hover { transform: rotate(var(--tilt, 0deg)); }
   }
 </style>
@@ -354,8 +425,12 @@
   <button class="video-toggle" id="video-toggle" type="button"></button>
 </header>
 
+<div class="floor">
 <main class="wrap">
   <div class="duo">
+    <img class="prop" src="media/props/box_carton.webp" alt="" width="342" height="346" loading="lazy" decoding="async" style="--w: 162px; --r: -12deg; left: -205px; top: 0;">
+    <img class="prop" src="media/props/kitchen_chair.webp" alt="" width="310" height="298" loading="lazy" decoding="async" style="--w: 146px; --r: 24deg; left: -185px; top: 250px;">
+    <img class="prop" src="media/props/plant.webp" alt="" width="284" height="286" loading="lazy" decoding="async" style="--w: 134px; --r: 0deg; right: -175px; top: 120px;">
     <section class="card" id="news-card" hidden>
       <p class="kicker" id="news-tag"></p>
       <h2 data-i18n="whatsNew"></h2>
@@ -376,21 +451,46 @@
     </section>
   </div>
 
-  <section class="shots" id="shots"></section>
+  <div class="block">
+    <img class="prop" src="media/props/picture_1_lie.webp" alt="" width="548" height="412" loading="lazy" decoding="async" style="--w: 250px; --r: 8deg; left: -265px; top: 110px;">
+    <img class="prop" src="media/props/mirror_lie.webp" alt="" width="412" height="816" loading="lazy" decoding="async" style="--w: 190px; --r: -9deg; right: -225px; top: -50px;">
+    <section class="shots" id="shots"></section>
+  </div>
 
-  <section class="card">
-    <h2 data-i18n="controls"></h2>
-    <div class="controls" id="controls"></div>
-    <p class="warn rebind" data-i18n="rebind"></p>
-  </section>
+  <div class="block">
+    <img class="prop" src="media/props/vase_side.webp" alt="" width="310" height="156" loading="lazy" decoding="async" style="--w: 146px; --r: -28deg; left: -190px; top: 60px;">
+    <img class="prop" src="media/props/dishes_box.webp" alt="" width="346" height="346" loading="lazy" decoding="async" style="--w: 163px; --r: 9deg; right: -190px; top: -20px;">
+    <section class="card">
+      <h2 data-i18n="controls"></h2>
+      <div class="controls" id="controls"></div>
+      <p class="warn rebind" data-i18n="rebind"></p>
+    </section>
+  </div>
 
-  <section class="card" id="history-card" hidden>
-    <h2 data-i18n="history"></h2>
-    <div id="history"></div>
-  </section>
+  <div class="block" id="history-card" hidden>
+    <img class="prop" src="media/props/armchair.webp" alt="" width="614" height="614" loading="lazy" decoding="async" style="--w: 290px; --r: 12deg; left: -320px; top: 30px;">
+    <img class="prop" src="media/props/floor_lamp_side.webp" alt="" width="874" height="170" loading="lazy" decoding="async" style="--w: 500px; --r: -5deg; left: -380px; top: 420px;">
+    <img class="prop" src="media/props/picture_6_lie.webp" alt="" width="479" height="345" loading="lazy" decoding="async" style="--w: 225px; --r: -6deg; right: -245px; top: 60px;">
+    <img class="prop" src="media/props/bean_bag.webp" alt="" width="613" height="613" loading="lazy" decoding="async" style="--w: 280px; --r: 0deg; right: -300px; top: 420px;">
+    <section class="card">
+      <h2 data-i18n="history"></h2>
+      <div id="history"></div>
+    </section>
+  </div>
 </main>
 
 <footer><span data-i18n="footer"></span></footer>
+</div>
+
+<dialog class="viewer" id="viewer">
+  <figure class="viewer-photo">
+    <img id="viewer-img" src="" alt="" width="1280" height="720">
+    <figcaption id="viewer-cap"></figcaption>
+  </figure>
+  <button class="viewer-btn prev" id="viewer-prev" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+  <button class="viewer-btn next" id="viewer-next" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+  <button class="viewer-btn close" id="viewer-close" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+</dialog>
 
 <script>
   // La página vive en https://<usuario>.github.io/<repo>/ y lee las versiones
@@ -460,6 +560,7 @@
       footer: "Made with Godot 4",
       pauseVideo: "Pause background video",
       playVideo: "Play background video",
+      closePhoto: "Close", prevPhoto: "Previous", nextPhoto: "Next",
       downloadFor: "Download for {os}",
       hintWindows: "No installation needed: open {file}. To update, download the new version and replace the file.",
       hintLinux: "Give it permission to run (chmod +x {file}) and open it.",
@@ -512,6 +613,7 @@
       footer: "Hecho con Godot 4",
       pauseVideo: "Pausar el vídeo de fondo",
       playVideo: "Reproducir el vídeo de fondo",
+      closePhoto: "Cerrar", prevPhoto: "Anterior", nextPhoto: "Siguiente",
       downloadFor: "Descargar para {os}",
       hintWindows: "No hace falta instalar nada: abre {file}. Para actualizar, descarga la versión nueva y sustituye el archivo.",
       hintLinux: "Dale permiso de ejecución (chmod +x {file}) y ábrelo.",
@@ -563,6 +665,7 @@
       footer: "Feito com Godot 4",
       pauseVideo: "Pausar o vídeo de fundo",
       playVideo: "Reproduzir o vídeo de fundo",
+      closePhoto: "Fechar", prevPhoto: "Anterior", nextPhoto: "Próxima",
       downloadFor: "Baixar para {os}",
       hintWindows: "Não precisa instalar: abra {file}. Para atualizar, baixe a nova versão e substitua o arquivo.",
       hintLinux: "Dê permissão de execução (chmod +x {file}) e abra.",
@@ -608,6 +711,7 @@
       footer: "Fait avec Godot 4",
       pauseVideo: "Mettre en pause la vidéo de fond",
       playVideo: "Lire la vidéo de fond",
+      closePhoto: "Fermer", prevPhoto: "Précédente", nextPhoto: "Suivante",
       downloadFor: "Télécharger pour {os}",
       hintWindows: "Aucune installation : ouvrez {file}. Pour mettre à jour, téléchargez la nouvelle version et remplacez le fichier.",
       hintLinux: "Rendez-le exécutable (chmod +x {file}) et lancez-le.",
@@ -653,6 +757,7 @@
       footer: "Erstellt mit Godot 4",
       pauseVideo: "Hintergrundvideo anhalten",
       playVideo: "Hintergrundvideo abspielen",
+      closePhoto: "Schließen", prevPhoto: "Zurück", nextPhoto: "Weiter",
       downloadFor: "Für {os} herunterladen",
       hintWindows: "Keine Installation nötig: Öffne {file}. Zum Aktualisieren die neue Version herunterladen und die Datei ersetzen.",
       hintLinux: "Mach sie ausführbar (chmod +x {file}) und starte sie.",
@@ -698,6 +803,7 @@
       footer: "Realizzato con Godot 4",
       pauseVideo: "Metti in pausa il video di sfondo",
       playVideo: "Riproduci il video di sfondo",
+      closePhoto: "Chiudi", prevPhoto: "Precedente", nextPhoto: "Successiva",
       downloadFor: "Scarica per {os}",
       hintWindows: "Nessuna installazione: apri {file}. Per aggiornare, scarica la nuova versione e sostituisci il file.",
       hintLinux: "Rendilo eseguibile (chmod +x {file}) e aprilo.",
@@ -743,6 +849,7 @@
       footer: "Stworzone w Godot 4",
       pauseVideo: "Wstrzymaj wideo w tle",
       playVideo: "Odtwórz wideo w tle",
+      closePhoto: "Zamknij", prevPhoto: "Poprzednie", nextPhoto: "Następne",
       downloadFor: "Pobierz na {os}",
       hintWindows: "Nie trzeba nic instalować: otwórz {file}. Aby zaktualizować, pobierz nową wersję i zastąp plik.",
       hintLinux: "Nadaj mu prawo wykonywania (chmod +x {file}) i uruchom.",
@@ -788,6 +895,7 @@
       footer: "Godot 4 ile yapıldı",
       pauseVideo: "Arka plan videosunu duraklat",
       playVideo: "Arka plan videosunu oynat",
+      closePhoto: "Kapat", prevPhoto: "Önceki", nextPhoto: "Sonraki",
       downloadFor: "{os} için indir",
       hintWindows: "Kurulum gerekmez: {file} dosyasını aç. Güncellemek için yeni sürümü indirip dosyanın üzerine yaz.",
       hintLinux: "Çalıştırma izni ver (chmod +x {file}) ve aç.",
@@ -833,6 +941,7 @@
       footer: "Сделано на Godot 4",
       pauseVideo: "Остановить фоновое видео",
       playVideo: "Включить фоновое видео",
+      closePhoto: "Закрыть", prevPhoto: "Назад", nextPhoto: "Вперёд",
       downloadFor: "Скачать для {os}",
       hintWindows: "Устанавливать ничего не нужно: откройте {file}. Чтобы обновить, скачайте новую версию и замените файл.",
       hintLinux: "Сделайте файл исполняемым (chmod +x {file}) и запустите его.",
@@ -878,6 +987,7 @@
       footer: "使用 Godot 4 制作",
       pauseVideo: "暂停背景视频",
       playVideo: "播放背景视频",
+      closePhoto: "关闭", prevPhoto: "上一张", nextPhoto: "下一张",
       downloadFor: "下载 {os} 版",
       hintWindows: "无需安装：直接打开 {file}。更新时下载新版本并替换该文件即可。",
       hintLinux: "赋予执行权限（chmod +x {file}）后打开。",
@@ -923,6 +1033,7 @@
       footer: "Godot 4 で制作",
       pauseVideo: "背景動画を一時停止",
       playVideo: "背景動画を再生",
+      closePhoto: "閉じる", prevPhoto: "前へ", nextPhoto: "次へ",
       downloadFor: "{os} 版をダウンロード",
       hintWindows: "インストール不要：{file} を開くだけです。更新するときは新しいバージョンをダウンロードしてファイルを置き換えます。",
       hintLinux: "実行権限を付けて（chmod +x {file}）開いてください。",
@@ -968,6 +1079,7 @@
       footer: "Godot 4로 제작",
       pauseVideo: "배경 동영상 일시정지",
       playVideo: "배경 동영상 재생",
+      closePhoto: "닫기", prevPhoto: "이전", nextPhoto: "다음",
       downloadFor: "{os}용 다운로드",
       hintWindows: "설치할 필요 없이 {file}을(를) 실행하세요. 업데이트하려면 새 버전을 받아 파일을 교체하세요.",
       hintLinux: "실행 권한을 준 뒤(chmod +x {file}) 실행하세요.",
@@ -1101,6 +1213,10 @@
       `<img src="${src}" alt="" width="1280" height="720" loading="lazy"><span class="cap">${esc(t(alt))}</span></a>`
     ).join("");
     renderVideoToggle();
+    for (const [id, key] of [["viewer-close", "closePhoto"], ["viewer-prev", "prevPhoto"], ["viewer-next", "nextPhoto"]]) {
+      $(id).setAttribute("aria-label", t(key));
+      $(id).title = t(key);
+    }
   }
 
   // Un botón por sistema, siempre en el mismo orden; el de quien visita, destacado.
@@ -1199,7 +1315,10 @@
     if (videoOn && !video.dataset.loaded) {
       video.dataset.loaded = "1";
       video.muted = true;
-      for (const [src, type] of [["media/hero.webm", "video/webm"], ["media/hero.mp4", "video/mp4"]]) {
+      // En 1080p si la pantalla lo aprovecha; en el móvil (o si no), en 720p, que pesa menos de la mitad.
+      const big = innerWidth >= 900 && Math.max(innerWidth, innerHeight) * (window.devicePixelRatio || 1) > 1500;
+      const size = big ? "1080" : "720";
+      for (const [src, type] of [[`media/hero-${size}.webm`, "video/webm"], [`media/hero-${size}.mp4`, "video/mp4"]]) {
         const source = document.createElement("source");
         source.src = src;
         source.type = type;
@@ -1227,6 +1346,44 @@
     }).observe(video);
   }
   updateVideo();
+
+  // Las capturas se ven en grande en la misma página (la siguiente, con las flechas o
+  // deslizando). Con Ctrl/Cmd o la rueda, como un enlace normal.
+  const viewer = $("viewer");
+  let viewing = 0;
+  let touchX = null;
+
+  function showPhoto(index) {
+    viewing = (index + SHOTS.length) % SHOTS.length;
+    const [src, alt] = SHOTS[viewing];
+    $("viewer-img").src = src;
+    $("viewer-img").alt = t(alt);
+    $("viewer-cap").textContent = t(alt);
+  }
+
+  $("shots").addEventListener("click", e => {
+    const photo = e.target.closest(".photo");
+    if (!photo || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || !viewer.showModal) return;
+    e.preventDefault();
+    showPhoto([...$("shots").children].indexOf(photo));
+    viewer.showModal();
+  });
+  $("viewer-prev").addEventListener("click", () => showPhoto(viewing - 1));
+  $("viewer-next").addEventListener("click", () => showPhoto(viewing + 1));
+  $("viewer-close").addEventListener("click", () => viewer.close());
+  // Pulsando fuera de la foto, se cierra.
+  viewer.addEventListener("click", e => { if (e.target === viewer) viewer.close(); });
+  viewer.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") showPhoto(viewing - 1);
+    else if (e.key === "ArrowRight") showPhoto(viewing + 1);
+  });
+  viewer.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
+  viewer.addEventListener("touchend", e => {
+    if (touchX === null) return;
+    const moved = e.changedTouches[0].clientX - touchX;
+    touchX = null;
+    if (Math.abs(moved) > 50) showPhoto(viewing + (moved < 0 ? 1 : -1));
+  });
 
   function setLang(code) {
     lang = I18N[code] ? code : "en";
