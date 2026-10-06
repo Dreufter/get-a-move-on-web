@@ -190,18 +190,44 @@
   }
   .stamp.soon { color: var(--stamp-red); }
   .version { font: 400 50px/1 var(--display); color: var(--ink); }
-  /* La versión es un desplegable: al elegir otra, la página se viste como era entonces. */
+  /* La versión es un desplegable (una etiqueta de papel, como el idioma; la lista, otra hoja): al
+     elegir otra, la página se viste como era entonces. */
   .version-pick { position: relative; display: inline-block; }
-  .version-pick select {
-    -webkit-appearance: none; appearance: none; cursor: pointer;
-    margin: 0 0 0 -6px; padding: 2px 46px 0 6px; border: 0; border-radius: 8px; background: transparent;
+  .version-pick .version {
+    display: inline-flex; align-items: center; gap: 14px; cursor: pointer;
+    margin: 0; padding: 6px 16px 2px 14px;
+    background: var(--paper); color: var(--ink);
+    border: 2px solid var(--kraft-dark); border-bottom-width: 6px; border-radius: 10px;
+    font: 400 44px/1 var(--display);
+    transition: background-color .1s ease, border-color .1s ease;
   }
-  .version-pick select:hover, .version-pick select:focus-visible { background: rgba(255, 250, 240, .35); }
-  .version-pick::after {
-    content: ""; position: absolute; right: 14px; top: 50%; width: 11px; height: 11px; margin-top: -9px;
-    border: solid var(--ink); border-width: 0 4px 4px 0; border-radius: 2px; transform: rotate(45deg); pointer-events: none;
+  .version-pick .version::after {
+    content: ""; flex: none; width: 11px; height: 11px; margin: -10px 2px 0 0;
+    border: solid currentColor; border-width: 0 4px 4px 0; border-radius: 2px; transform: rotate(45deg);
   }
-  .version-pick option { font: 700 18px var(--text); }
+  .version-pick .version[aria-expanded="true"]::after { margin-top: 8px; transform: rotate(225deg); }
+  .version-pick .version:hover { background: var(--paper-hover); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .version-pick .version:active { padding-top: 10px; border-bottom-width: 2px; background: var(--paper-pressed); }
+  .version-pick .version:disabled { cursor: default; box-shadow: none; border-color: var(--kraft-dark); background: var(--paper); }
+  .version-pick .version:disabled::after { display: none; }
+  .version-menu {
+    position: absolute; z-index: 5; top: calc(100% + 8px); left: 0; min-width: 100%;
+    margin: 0; padding: 6px; list-style: none;
+    background: var(--fibers), var(--paper); border: 2px solid var(--kraft-dark); border-bottom-width: 5px; border-radius: 10px;
+    box-shadow: 0 14px 26px rgba(0, 0, 0, .4);
+  }
+  .version-menu li {
+    display: flex; align-items: baseline; gap: 12px; padding: 9px 12px 7px; border-radius: 6px;
+    color: var(--ink); white-space: nowrap; cursor: pointer;
+  }
+  .version-menu li:hover, .version-menu li:focus { background: var(--kraft-light); outline: none; }
+  .version-menu li[aria-selected="true"] { box-shadow: inset 4px 0 var(--accent); }
+  .vm-tag { font: 400 24px/1 var(--display); }
+  .vm-date { font: 800 13px/1 var(--text); color: var(--ink-dim); }
+  .vm-latest {
+    margin-left: auto; padding: 3px 6px 1px; border: 2px solid currentColor; border-radius: 4px;
+    font: 400 12px/1.1 var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--stamp-green);
+  }
   .stamp.old { color: var(--ink-dim); }
   .meta { margin: 8px 0 18px !important; font-weight: 800; }
   .downloads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -410,7 +436,11 @@
     .hero-inner { padding: 78px 16px 84px; }
     .title { font-size: min(13.6vw, 72px); }
     .card { padding: 38px 18px 22px; }
-    .version { font-size: 42px; }
+    .version, .version-pick .version { font-size: 36px; }
+    /* La lista, sin salirse de la pantalla: la fecha y la marca de la última bajan si no caben. */
+    .version-menu { width: max-content; max-width: calc(100vw - 72px); }
+    .version-menu li { flex-wrap: wrap; row-gap: 4px; white-space: normal; }
+    .vm-latest { margin-left: 0; }
     .downloads { grid-template-columns: minmax(0, 1fr); }
     .downloads .btn { flex-direction: row; justify-content: space-between; padding-left: 16px; padding-right: 16px; }
     .wrap { padding-left: 16px; padding-right: 16px; }
@@ -480,10 +510,25 @@
   }
   html[data-era] .stamp.old { border-color: var(--dim); color: var(--dim); }
   html[data-era] .version { font: 800 46px/1.05 var(--display); color: var(--light); }
-  html[data-era] .version-pick select { color: var(--light); }
-  html[data-era] .version-pick::after { border-color: var(--light); }
-  html[data-era] .version-pick select:hover, html[data-era] .version-pick select:focus-visible { background-color: var(--button-hover); }
-  html[data-era] .version-pick option { background: var(--bg-deep); color: var(--light); }
+  html[data-era] .version-pick .version {
+    padding: 6px 16px 6px 14px; background: var(--button); color: var(--light);
+    border: 2px solid var(--button); border-radius: 10px; font: 800 40px/1.05 var(--display);
+  }
+  html[data-era] .version-pick .version:hover { background: var(--button-hover); border-color: var(--accent); box-shadow: none; }
+  html[data-era] .version-pick .version:active { padding-top: 6px; border-bottom-width: 2px; background: var(--accent-dark); }
+  html[data-era] .version-pick .version:disabled { background: var(--button); border-color: var(--button); }
+  html[data-era] .version-menu { background: var(--bg-deep); border: 2px solid var(--panel-border); border-radius: 12px; }
+  html[data-era] .version-menu li { color: var(--light); }
+  html[data-era] .version-menu li:hover, html[data-era] .version-menu li:focus { background: var(--button-hover); }
+  html[data-era] .vm-tag { font: 800 22px/1 var(--display); }
+  html[data-era] .vm-date { color: var(--dim); font-weight: 600; }
+  html[data-era] .vm-latest { border-radius: 999px; font: 700 11px/1.3 var(--text); color: var(--accent); }
+  html[data-era="proto"] .version-pick .version, html[data-era="proto"] .version-menu { border-radius: 3px; border-color: transparent; }
+  html[data-era="proto"] .version-menu { background: rgba(22, 22, 22, .95); }
+  html[data-era="proto"] .vm-latest { border-radius: 3px; color: var(--light); }
+  @media (max-width: 760px) {
+    html[data-era] .version-pick .version { font-size: 34px; }
+  }
   html[data-era] .meta { color: var(--dim); }
   html[data-era] .btn, html[data-era] .lang select, html[data-era] .video-toggle, html[data-era] .viewer-btn,
   html[data-era] .chip, html[data-era] kbd {
@@ -584,7 +629,7 @@
       <section class="card release" aria-live="polite">
         <div class="release-top">
           <span class="stamp" id="badge"></span>
-          <div class="version-pick"><select class="version" id="version" disabled><option>—</option></select></div>
+          <div class="version-pick" id="version-pick"><button class="version" id="version" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="version-menu" disabled>—</button><ul class="version-menu" id="version-menu" role="listbox" hidden></ul></div>
         </div>
         <p class="meta" id="meta"></p>
         <div class="downloads" id="downloads"></div>
@@ -1579,9 +1624,10 @@
     ["screenshots/carrying.webp", "altCarry"], ["screenshots/truck.webp", "altTruck"],
     ["screenshots/pool.webp", "altPool"], ["screenshots/menu.webp", "altMenu"],
   ];
-  // La versión actual (la última publicada) se ve como la página de siempre (CURRENT_LOOK: el
-  // cartón, con el vídeo y las capturas de media/ y screenshots/). Las anteriores, como eran los
-  // menús de su época (ver los estilos de data-era), con su vídeo de fondo y sus capturas.
+  // Cómo se ve cada versión: la 0.4.0 con el cartón (CARDBOARD: el vídeo y las capturas de media/ y
+  // screenshots/), y también las que vengan mientras no tengan lo suyo; las anteriores, como eran
+  // los menús de su época (ver los estilos de data-era), con su vídeo de fondo y sus capturas.
+  const CARDBOARD = { era: "", media: "media/", shots: SHOTS };
   const LOOKS = {
     "v0.1.0": {
       era: "proto", media: "media/v0.1.0/", shots: [
@@ -1602,21 +1648,13 @@
         ["screenshots/v0.3.0/carrying.webp", "altCarry"], ["screenshots/v0.3.0/menu.webp", "altMenu"],
       ],
     },
-    "v0.4.0": {
-      era: "navy", media: "media/v0.4.0/", shots: [
-        ["screenshots/v0.4.0/living-room.webp", "altLiving"], ["screenshots/v0.4.0/door.webp", "altDoor"],
-        ["screenshots/v0.4.0/carrying.webp", "altCarry"], ["screenshots/v0.4.0/truck.webp", "altTruck"],
-        ["screenshots/v0.4.0/pool.webp", "altPool"], ["screenshots/v0.4.0/menu.webp", "altMenu"],
-      ],
-    },
+    "v0.4.0": CARDBOARD,
   };
-  const CURRENT_LOOK = { era: "", media: "media/", shots: SHOTS };
   const THEME_COLORS = { "": "#2b2118", navy: "#1c2438", proto: "#1c243a" };
-  // La última versión publicada cuando se actualizó la página: es la actual hasta que llega la
+  // La última versión publicada cuando se actualizó la página: la que se ve hasta que llega la
   // lista de versiones (y si no llega).
   const PUBLISHED = "v0.4.0";
-  const currentTag = () => (releases && releases.length ? releases[0].tag_name : PUBLISHED);
-  const lookOf = tag => (tag === currentTag() ? CURRENT_LOOK : LOOKS[tag] || CURRENT_LOOK);
+  const lookOf = tag => LOOKS[tag] || CARDBOARD;
 
   // Versiones de ejemplo para la vista previa en local.
   const demoAssets = sizes => Object.values(PLATFORMS).map((p, i) => ({ name: p.file, size: sizes[i] * 1048576, browser_download_url: "#" }));
@@ -1722,8 +1760,8 @@
     $("smartscreen").hidden = PLATFORM !== "windows";
     $("game-lang").hidden = lang === "es";
     $("demo").hidden = !DEMO;
-    $("version").setAttribute("aria-label", t("chooseVersion"));
     $("version").title = t("chooseVersion");
+    $("version-menu").setAttribute("aria-label", t("chooseVersion"));
     renderVideoToggle();
     for (const [id, key] of [["viewer-close", "closePhoto"], ["viewer-prev", "prevPhoto"], ["viewer-next", "nextPhoto"]]) {
       $(id).setAttribute("aria-label", t(key));
@@ -1821,7 +1859,7 @@
     applyLook(tag);
     renderShots();
     const badge = $("badge");
-    const select = $("version");
+    const picker = $("version");
     const hasRelease = releases && releases.length > 0;
     badge.classList.toggle("soon", releases !== null && !hasRelease && !loadFailed);
     badge.classList.toggle("old", !!shown && shown !== releases[0]);
@@ -1830,8 +1868,10 @@
     $("history-card").hidden = !hasRelease;
 
     if (!hasRelease) {
-      select.innerHTML = "<option>—</option>";
-      select.disabled = true;
+      picker.textContent = "—";
+      picker.disabled = true;
+      closeVersionMenu(false);
+      $("version-menu").innerHTML = "";
       if (releases === null) {
         badge.textContent = t("latest");
         $("meta").textContent = t(loadFailed ? "apiError" : "loading");
@@ -1844,9 +1884,10 @@
     }
 
     badge.textContent = t(shown === releases[0] ? "latest" : "olderVersion");
-    select.disabled = releases.length < 2;
-    select.innerHTML = releases.map(r => `<option value="${esc(r.tag_name)}">${esc(r.tag_name)}</option>`).join("");
-    select.value = shown.tag_name;
+    picker.textContent = shown.tag_name;
+    picker.disabled = releases.length < 2;
+    picker.setAttribute("aria-label", `${t("chooseVersion")} (${shown.tag_name})`);
+    renderVersionMenu(shown);
     // El tamaño va en cada botón.
     $("meta").textContent = t("released", { date: fmtDate(dateOf(shown)), size: "" }).replace(/ · $/, "");
     renderDownloads(shown, false);
@@ -1875,7 +1916,58 @@
     history.replaceState(null, "", url);
     renderReleases();
   }
-  $("version").addEventListener("change", e => choose(e.target.value));
+  // El desplegable de versiones: el botón con la que se ve y, al pulsarlo, la lista (cada una con su
+  // fecha; la última, marcada). Con el teclado: flechas, Inicio/Fin, Intro o espacio, y Esc.
+  const versionButton = $("version");
+  const versionMenu = $("version-menu");
+  function renderVersionMenu(shown) {
+    versionMenu.innerHTML = releases.map((release, i) =>
+      `<li role="option" tabindex="-1" data-tag="${esc(release.tag_name)}" aria-selected="${release === shown}">` +
+      `<span class="vm-tag">${esc(release.tag_name)}</span><span class="vm-date">${esc(fmtDate(dateOf(release)))}</span>` +
+      (i === 0 ? `<span class="vm-latest">${esc(t("latest"))}</span>` : "") + "</li>"
+    ).join("");
+  }
+  function openVersionMenu(last) {
+    if (versionButton.disabled) return;
+    versionMenu.hidden = false;
+    versionButton.setAttribute("aria-expanded", "true");
+    const items = [...versionMenu.children];
+    (last ? items[items.length - 1] : items.find(li => li.getAttribute("aria-selected") === "true") || items[0]).focus();
+  }
+  function closeVersionMenu(refocus) {
+    if (versionMenu.hidden) return;
+    versionMenu.hidden = true;
+    versionButton.setAttribute("aria-expanded", "false");
+    if (refocus) versionButton.focus();
+  }
+  function pickVersion(item) {
+    closeVersionMenu(true);
+    if (item.getAttribute("aria-selected") !== "true") choose(item.dataset.tag);
+  }
+  versionButton.addEventListener("click", () => (versionMenu.hidden ? openVersionMenu(false) : closeVersionMenu(true)));
+  versionButton.addEventListener("keydown", e => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    openVersionMenu(e.key === "ArrowUp");
+  });
+  versionMenu.addEventListener("click", e => {
+    const item = e.target.closest("[data-tag]");
+    if (item) pickVersion(item);
+  });
+  versionMenu.addEventListener("keydown", e => {
+    const items = [...versionMenu.children];
+    const at = items.indexOf(document.activeElement);
+    if (e.key === "Tab") return closeVersionMenu(false);
+    const moves = { ArrowDown: Math.min(at + 1, items.length - 1), ArrowUp: Math.max(at - 1, 0), Home: 0, End: items.length - 1 };
+    if (e.key in moves) items[moves[e.key]].focus();
+    else if ((e.key === "Enter" || e.key === " ") && at >= 0) pickVersion(items[at]);
+    else if (e.key === "Escape") closeVersionMenu(true);
+    else return;
+    e.preventDefault();
+  });
+  document.addEventListener("click", e => {
+    if (!e.target.closest("#version-pick")) closeVersionMenu(false);
+  });
   $("history").addEventListener("click", e => {
     const button = e.target.closest("[data-see]");
     if (!button) return;
