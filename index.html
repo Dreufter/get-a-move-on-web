@@ -10,7 +10,7 @@
 <link rel="preload" href="media/hero-poster.webp" as="image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800&family=Open+Sans:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
 <style>
   /* Los colores y las piezas de la interfaz del juego (ui/ui_theme.gd): cartón, cinta de
      embalar y etiquetas de papel. */
@@ -35,6 +35,7 @@
     --outline: #3a1d08;
     --stamp-green: #23511f;
     --floor-top: rgba(22, 15, 10, .92);
+    --shade: 29, 21, 14;
     --stamp-red: #8e2a1c;
     --display: "Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif;
     --text: Nunito, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -62,7 +63,7 @@
     position: relative; isolation: isolate; overflow: hidden;
     display: flex; align-items: center;
     min-height: min(100svh, 920px);
-    background: #6d8fb3 url(media/hero-poster.webp) 62% center / cover;
+    background: #6d8fb3 var(--poster, none) 62% center / cover;
   }
   .hero-video {
     position: absolute; inset: 0; z-index: -2;
@@ -71,8 +72,8 @@
   .hero::before {
     content: ""; position: absolute; inset: 0; z-index: -1;
     background:
-      linear-gradient(90deg, rgba(29, 21, 14, .74) 0%, rgba(29, 21, 14, .5) 30%, rgba(29, 21, 14, 0) 56%),
-      linear-gradient(180deg, rgba(29, 21, 14, .5) 0%, rgba(29, 21, 14, 0) 16%, rgba(29, 21, 14, 0) 74%, var(--floor-top) 100%);
+      linear-gradient(90deg, rgba(var(--shade), .74) 0%, rgba(var(--shade), .5) 30%, rgba(var(--shade), 0) 56%),
+      linear-gradient(180deg, rgba(var(--shade), .5) 0%, rgba(var(--shade), 0) 16%, rgba(var(--shade), 0) 74%, var(--floor-top) 100%);
   }
   .hero-inner { width: 100%; padding: 92px clamp(16px, 5vw, 96px) 84px; }
   .hero-copy { max-width: 560px; }
@@ -189,6 +190,19 @@
   }
   .stamp.soon { color: var(--stamp-red); }
   .version { font: 400 50px/1 var(--display); color: var(--ink); }
+  /* La versión es un desplegable: al elegir otra, la página se viste como era entonces. */
+  .version-pick { position: relative; display: inline-block; }
+  .version-pick select {
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    margin: 0 0 0 -6px; padding: 2px 46px 0 6px; border: 0; border-radius: 8px; background: transparent;
+  }
+  .version-pick select:hover, .version-pick select:focus-visible { background: rgba(255, 250, 240, .35); }
+  .version-pick::after {
+    content: ""; position: absolute; right: 14px; top: 50%; width: 11px; height: 11px; margin-top: -9px;
+    border: solid var(--ink); border-width: 0 4px 4px 0; border-radius: 2px; transform: rotate(45deg); pointer-events: none;
+  }
+  .version-pick option { font: 700 18px var(--text); }
+  .stamp.old { color: var(--ink-dim); }
   .meta { margin: 8px 0 18px !important; font-weight: 800; }
   .downloads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .downloads .btn { flex-direction: column; gap: 2px; padding-left: 8px; padding-right: 8px; }
@@ -286,6 +300,11 @@
   .photo img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: var(--kraft-light); }
   /* La grande ocupa lo que las dos de al lado (sin estirar la fila). */
   .photo.big img { flex: 1 1 0; height: 0; min-height: 0; aspect-ratio: auto; }
+  /* Las versiones con menos capturas: con 5, la grande ocupa una fila; con 4, de dos en dos. */
+  .shots[data-count="5"] .photo:nth-child(1) { grid-row: auto; }
+  .shots[data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shots[data-count="4"] .photo:nth-child(1) { grid-column: auto; grid-row: auto; }
+  .shots[data-count="4"] .photo.big img { flex: none; height: auto; aspect-ratio: 16 / 9; }
   .cap { padding: 8px 2px 10px; font-size: 14px; font-weight: 800; line-height: 1.35; }
 
   /* El historial: una etiqueta de envío por versión. */
@@ -294,6 +313,8 @@
     background: var(--paper); border: 2px solid var(--kraft-dark); border-radius: 6px;
   }
   .release-item:first-child { margin-top: 0; }
+  .release-item.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .release-head .chip { margin-left: auto; }
   .release-head {
     display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px;
     margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px dashed rgba(140, 95, 49, .45);
@@ -360,6 +381,21 @@
   @media (max-width: 1100px) {
     .prop { display: none; }
   }
+  /* Lo de cada versión antigua (ver DECOS en la vista de cada una): solo la suya, y como los
+     muebles, solo en pantallas anchas. */
+  .deco { display: none; }
+  html[data-version="v0.1.0"] .deco.v010, html[data-version="v0.2.0"] .deco.v020,
+  html[data-version="v0.3.0"] .deco.v030 { display: block; }
+  .deco-spin { transform-box: fill-box; transform-origin: center; animation: deco-spin 7s linear infinite; }
+  .deco-bob { transform-box: fill-box; transform-origin: center; animation: deco-bob 2.6s ease-in-out infinite alternate; }
+  @keyframes deco-spin { to { transform: rotate(360deg); } }
+  @keyframes deco-bob { from { transform: translateY(-3px) rotate(-4deg); } to { transform: translateY(4px) rotate(3deg); } }
+  @media (max-width: 1100px) {
+    html[data-version] .deco.deco { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deco-spin, .deco-bob { animation: none; }
+  }
   @media (max-width: 900px) {
     .duo { grid-template-columns: minmax(0, 1fr); gap: 52px; }
     .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -369,7 +405,7 @@
   @media (max-width: 760px) {
     .hero { align-items: flex-start; min-height: 0; }
     .hero::before {
-      background: linear-gradient(180deg, rgba(29, 21, 14, .6) 0%, rgba(29, 21, 14, .3) 30%, rgba(29, 21, 14, .55) 62%, var(--floor-top) 100%);
+      background: linear-gradient(180deg, rgba(var(--shade), .6) 0%, rgba(var(--shade), .3) 30%, rgba(var(--shade), .55) 62%, var(--floor-top) 100%);
     }
     .hero-inner { padding: 78px 16px 84px; }
     .title { font-size: min(13.6vw, 72px); }
@@ -389,10 +425,146 @@
     .viewer[open] { animation: none; }
     .photo:hover { transform: rotate(var(--tilt, 0deg)); }
   }
+
+  /* --- El aspecto de cada época del juego (ver LOOKS): la página se viste como los menús de la
+     versión que eliges. "proto" (0.1–0.2): el tema por defecto de Godot sobre el azul del menú;
+     "navy" (0.3–0.4): el tema azul marino (ui/ui_theme.gd de entonces); sin data-era, el cartón. --- */
+  html[data-era] {
+    --display: "Open Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --text: "Open Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --accent: #f28c28;
+    --accent-dark: #b8631a;
+    --outline: #33190a;
+  }
+  html[data-era="navy"] {
+    --bg: #1c2438; --bg-deep: #151b2b; --shade: 21, 27, 43; --floor-top: rgba(28, 36, 56, .96);
+    --panel: rgba(35, 45, 69, .97); --panel-border: #3a4a6e; --field: #151b2b;
+    --button: #2e3a58; --button-hover: #3a4a70; --light: #eef1f7; --dim: #9aa6c2;
+  }
+  html[data-era="proto"] {
+    --bg: #1c243a; --bg-deep: #161c2e; --shade: 20, 25, 40; --floor-top: rgba(28, 36, 58, .96);
+    --panel: rgba(26, 26, 26, .6); --panel-border: transparent; --field: rgba(0, 0, 0, .28);
+    --button: rgba(26, 26, 26, .6); --button-hover: rgba(57, 57, 57, .6); --light: #dfdfdf; --dim: #a8a8a8;
+  }
+  html[data-era] body { font-weight: 600; background: var(--bg); }
+  html[data-era] .hero { background-color: var(--bg); }
+  html[data-era] .eyebrow, html[data-era] .demo, html[data-era] .stamp,
+  html[data-era] .sheet, html[data-era] .photo, html[data-era] .viewer-photo { transform: none; }
+  html[data-era] .card::before, html[data-era] .photo::before, html[data-era] .viewer-photo::before { display: none; }
+  html[data-era] .prop { display: none; }
+  html[data-era] .eyebrow {
+    padding: 0; background: none; box-shadow: none; color: var(--accent);
+    font: 700 13px/1.5 var(--text); letter-spacing: .18em; text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
+  }
+  /* El título como TitleLabel: naranja con un contorno grueso, sin sombra. */
+  html[data-era] .title {
+    font: 700 clamp(40px, 5.4vw, 72px)/1.05 var(--display); letter-spacing: -.01em;
+    -webkit-text-stroke: .14em var(--outline); filter: none;
+  }
+  html[data-era] .slogan {
+    font: 600 clamp(19px, 2vw, 24px)/1.2 var(--text); color: var(--light); opacity: .85;
+    -webkit-text-stroke: 0; text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
+  }
+  html[data-era="navy"] .slogan { color: var(--dim); opacity: 1; }
+  html[data-era] .demo { background: var(--panel); color: var(--light); box-shadow: none; border-radius: 6px; }
+  html[data-era] .card {
+    padding: 26px 26px 22px; background: var(--panel); color: var(--light);
+    border: 2px solid var(--panel-border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  }
+  html[data-era] .card h2 { font: 700 28px/1.15 var(--display); color: var(--accent); }
+  html[data-era] .kicker { font: 700 14px/1.2 var(--text); color: var(--dim); opacity: 1; letter-spacing: .06em; }
+  html[data-era] .card code { background: var(--field); border-color: var(--panel-border); color: var(--light); }
+  html[data-era] .stamp {
+    padding: 3px 12px 2px; border: 2px solid var(--accent); border-radius: 999px;
+    font: 700 13px/1.4 var(--text); letter-spacing: .08em; color: var(--accent); opacity: 1;
+  }
+  html[data-era] .stamp.old { border-color: var(--dim); color: var(--dim); }
+  html[data-era] .version { font: 800 46px/1.05 var(--display); color: var(--light); }
+  html[data-era] .version-pick select { color: var(--light); }
+  html[data-era] .version-pick::after { border-color: var(--light); }
+  html[data-era] .version-pick select:hover, html[data-era] .version-pick select:focus-visible { background-color: var(--button-hover); }
+  html[data-era] .version-pick option { background: var(--bg-deep); color: var(--light); }
+  html[data-era] .meta { color: var(--dim); }
+  html[data-era] .btn, html[data-era] .lang select, html[data-era] .video-toggle, html[data-era] .viewer-btn,
+  html[data-era] .chip, html[data-era] kbd {
+    background-color: var(--button); color: var(--light); text-shadow: none;
+    border: 2px solid var(--button); border-radius: 10px;
+  }
+  html[data-era] .btn { font: 700 18px/1.2 var(--display); }
+  html[data-era] .btn:hover, html[data-era] .lang select:hover, html[data-era] .video-toggle:hover,
+  html[data-era] .viewer-btn:hover, html[data-era] .chip:hover {
+    background-color: var(--button-hover); border-color: var(--accent); box-shadow: none;
+  }
+  html[data-era] .btn:active, html[data-era] .video-toggle:active, html[data-era] .viewer-btn:active, html[data-era] .chip:active {
+    padding-top: 9px; border-bottom-width: 2px; background-color: var(--accent-dark);
+  }
+  html[data-era] .downloads .btn:active { padding-top: 9px; }
+  html[data-era] .btn small { color: var(--dim); font-weight: 600; }
+  html[data-era] .btn.primary { background: var(--accent); border-color: var(--accent); color: #1b1204; }
+  html[data-era] .btn.primary svg { filter: none; }
+  html[data-era] .btn.primary small { color: #3d2507; }
+  html[data-era] .btn.primary:hover { background: #f4a24f; border-color: #f7b878; }
+  html[data-era] .btn.primary:active { background: var(--accent-dark); }
+  html[data-era] .lang { font: 600 15px var(--text); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
+  html[data-era] .lang select {
+    font: 600 15px var(--text); padding: 6px 34px 6px 12px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23eef1f7' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+  html[data-era] .lang select option { background: var(--bg-deep); color: var(--light); }
+  html[data-era] .floor { background: radial-gradient(1100px 700px at 50% 0, rgba(255, 255, 255, .04), transparent 70%), var(--bg); box-shadow: none; }
+  html[data-era] .sheet { background: var(--field); border: 2px solid var(--panel-border); border-radius: 10px; box-shadow: none; }
+  html[data-era] .notes li::before { border-color: var(--dim); background: transparent; }
+  html[data-era] .notes li::after { border-color: var(--accent); }
+  html[data-era] .steps li::before { color: #1b1204; text-shadow: none; border-color: var(--accent); font: 800 17px/1 var(--display); }
+  html[data-era] kbd { font: 700 15px/1.3 var(--display); border-radius: 8px; }
+  html[data-era] .photo {
+    padding: 8px 8px 0; background: var(--panel); color: var(--light);
+    border: 2px solid var(--panel-border); border-radius: 12px; box-shadow: 0 10px 24px rgba(0, 0, 0, .4);
+  }
+  html[data-era] .photo img { border-radius: 6px; background: var(--bg-deep); }
+  html[data-era] .photo:hover { transform: translateY(-4px); border-color: var(--accent); }
+  html[data-era] .cap { font-weight: 600; color: var(--light); }
+  html[data-era] .release-item { background: var(--field); border-color: var(--panel-border); border-radius: 12px; }
+  html[data-era] .release-item.current { border-color: var(--accent); }
+  html[data-era] .release-head { border-bottom-color: var(--panel-border); }
+  html[data-era] .release-tag { font: 800 22px/1.2 var(--display); color: var(--light); }
+  html[data-era] .release-date { color: var(--dim); }
+  html[data-era] .viewer::backdrop { background: rgba(12, 16, 26, .9); }
+  html[data-era] .viewer-photo { padding: 10px 10px 0; background: var(--panel); color: var(--light); border-radius: 14px; }
+  html[data-era] .viewer-photo img { border-radius: 8px; background: var(--bg-deep); }
+  html[data-era] footer { color: var(--dim); }
+
+  /* El tema por defecto de Godot: cajas grises translúcidas, esquinas casi rectas y sin bordes. */
+  html[data-era="proto"] .card, html[data-era="proto"] .photo, html[data-era="proto"] .viewer-photo,
+  html[data-era="proto"] .sheet, html[data-era="proto"] .release-item { border-radius: 3px; border-color: transparent; }
+  html[data-era="proto"] .card { box-shadow: none; backdrop-filter: blur(2px); }
+  html[data-era="proto"] .card h2 { color: var(--light); font-weight: 600; font-size: 26px; }
+  html[data-era="proto"] .btn, html[data-era="proto"] .lang select, html[data-era="proto"] .video-toggle,
+  html[data-era="proto"] .viewer-btn, html[data-era="proto"] .chip, html[data-era="proto"] kbd {
+    border-radius: 3px; border-color: transparent; font-weight: 600;
+  }
+  html[data-era="proto"] .btn:hover, html[data-era="proto"] .lang select:hover, html[data-era="proto"] .video-toggle:hover,
+  html[data-era="proto"] .viewer-btn:hover, html[data-era="proto"] .chip:hover { border-color: transparent; color: #f2f2f2; }
+  html[data-era="proto"] .btn:active, html[data-era="proto"] .video-toggle:active,
+  html[data-era="proto"] .viewer-btn:active, html[data-era="proto"] .chip:active { background-color: rgba(0, 0, 0, .6); }
+  html[data-era="proto"] .btn.primary { background: rgba(57, 57, 57, .75); border-color: rgba(255, 255, 255, .75); color: #f2f2f2; }
+  html[data-era="proto"] .btn.primary small { color: var(--dim); }
+  html[data-era="proto"] .btn.primary:hover { background: rgba(80, 80, 80, .75); border-color: #fff; }
+  html[data-era="proto"] .stamp { border-radius: 3px; }
+  html[data-era="proto"] .steps li::before { background: var(--button-hover); border-color: transparent; color: var(--light); }
+  html[data-era="proto"] .photo:hover { border-color: transparent; }
+  html[data-era="proto"] .release-item.current { border-color: rgba(255, 255, 255, .6); }
+  /* De fondo, la rejilla de un prototipo. */
+  html[data-era="proto"] .floor {
+    background:
+      linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px) 0 0 / 48px 48px,
+      var(--bg);
+  }
 </style>
 </head>
 <body>
-<header class="hero">
+<header class="hero" id="hero" style="--poster: url(media/hero-poster.webp)">
   <video class="hero-video" id="hero-video" muted loop playsinline disablepictureinpicture preload="none"
     poster="media/hero-poster.webp" aria-hidden="true" tabindex="-1"></video>
 
@@ -412,7 +584,7 @@
       <section class="card release" aria-live="polite">
         <div class="release-top">
           <span class="stamp" id="badge"></span>
-          <div class="version" id="version">—</div>
+          <div class="version-pick"><select class="version" id="version" disabled><option>—</option></select></div>
         </div>
         <p class="meta" id="meta"></p>
         <div class="downloads" id="downloads"></div>
@@ -428,6 +600,10 @@
 <div class="floor">
 <main class="wrap">
   <div class="duo">
+    <svg class="prop deco v010" viewBox="0 0 170 130" aria-hidden="true" style="--w: 140px; left: -158px; top: 10px;"><g transform="translate(10 20)"><ellipse cx="18" cy="95" rx="22" ry="5" fill="rgba(0,0,0,.35)"/><rect x="0" y="0" width="36" height="92" rx="18" fill="#f28c28"/><rect x="0" y="0" width="12" height="92" rx="6" fill="rgba(255,255,255,.12)"/><rect x="22" y="16" width="20" height="9" rx="2" fill="#1b1d26"/></g><g transform="translate(92 22) rotate(-6 20 20)"><path d="M0 8.8 L8.8 0 L48.8 0 L40 8.8 Z" fill="#d8b183"/><path d="M40 8.8 L48.8 0 L48.8 40 L40 48.8 Z" fill="#9c7247"/><rect x="0" y="8.8" width="40" height="40" fill="#c49a6c"/></g></svg>
+    <svg class="prop deco v010" viewBox="0 0 150 120" aria-hidden="true" style="--w: 128px; right: -148px; top: 150px;"><g transform="translate(0 22)"><ellipse cx="18" cy="95" rx="22" ry="5" fill="rgba(0,0,0,.35)"/><rect x="0" y="0" width="36" height="92" rx="18" fill="#2bb3a3"/><rect x="0" y="0" width="12" height="92" rx="6" fill="rgba(255,255,255,.12)"/><rect x="22" y="16" width="20" height="9" rx="2" fill="#1b1d26"/></g><g transform="translate(52 10)"><ellipse cx="18" cy="95" rx="22" ry="5" fill="rgba(0,0,0,.35)"/><rect x="0" y="0" width="36" height="92" rx="18" fill="#8e6bd8"/><rect x="0" y="0" width="12" height="92" rx="6" fill="rgba(255,255,255,.12)"/><rect x="22" y="16" width="20" height="9" rx="2" fill="#1b1d26"/></g><g transform="translate(104 24)"><ellipse cx="18" cy="95" rx="22" ry="5" fill="rgba(0,0,0,.35)"/><rect x="0" y="0" width="36" height="92" rx="18" fill="#e8c547"/><rect x="0" y="0" width="12" height="92" rx="6" fill="rgba(255,255,255,.12)"/><rect x="22" y="16" width="20" height="9" rx="2" fill="#1b1d26"/></g></svg>
+    <svg class="prop deco v020" viewBox="0 0 210 140" aria-hidden="true" style="--w: 150px; left: -165px; top: 10px;"><g transform="translate(18 104) rotate(-62)"><rect x="-6" y="0" width="12" height="44" rx="6" fill="#d97a1c"/></g><g transform="translate(6 30)"><ellipse cx="18" cy="95" rx="22" ry="5" fill="rgba(0,0,0,.35)"/><rect x="0" y="0" width="36" height="92" rx="18" fill="#f28c28"/><rect x="0" y="0" width="12" height="92" rx="6" fill="rgba(255,255,255,.12)"/><rect x="22" y="16" width="20" height="9" rx="2" fill="#1b1d26"/></g><g stroke="rgba(255,255,255,.55)" stroke-width="4" stroke-linecap="round"><path d="M96 46h26"/><path d="M90 62h30"/><path d="M98 78h22"/></g><g transform="translate(134 30) rotate(24 20 20)"><path d="M0 8.8 L8.8 0 L48.8 0 L40 8.8 Z" fill="#d8b183"/><path d="M40 8.8 L48.8 0 L48.8 40 L40 48.8 Z" fill="#9c7247"/><rect x="0" y="8.8" width="40" height="40" fill="#c49a6c"/></g></svg>
+    <svg class="prop deco v030" viewBox="0 0 230 150" aria-hidden="true" style="--w: 150px; left: -168px; top: 10px;"><g fill="none" stroke="#2bb3a3" stroke-width="5" stroke-linecap="round"><circle cx="115" cy="22" r="7" fill="#2bb3a3"/><path d="M98 8 a20 20 0 0 0 0 28"/><path d="M132 8 a20 20 0 0 1 0 28"/><path d="M88 0 a32 32 0 0 0 0 44"/><path d="M142 0 a32 32 0 0 1 0 44"/></g><rect x="4" y="56" width="222" height="88" rx="14" fill="rgba(35,45,69,.95)" stroke="#3a4a6e" stroke-width="3"/><rect x="22" y="76" width="44" height="12" rx="6" fill="#2bb3a3"/><rect x="74" y="76" width="132" height="12" rx="6" fill="#9aa6c2"/><rect x="22" y="110" width="34" height="12" rx="6" fill="#f28c28"/><rect x="64" y="110" width="104" height="12" rx="6" fill="#eef1f7"/></svg>
     <img class="prop" src="media/props/box_carton.webp" alt="" width="342" height="346" loading="lazy" decoding="async" style="--w: 162px; --r: -12deg; left: -205px; top: 0;">
     <img class="prop" src="media/props/kitchen_chair.webp" alt="" width="310" height="298" loading="lazy" decoding="async" style="--w: 146px; --r: 24deg; left: -185px; top: 250px;">
     <img class="prop" src="media/props/plant.webp" alt="" width="284" height="286" loading="lazy" decoding="async" style="--w: 134px; --r: 0deg; right: -175px; top: 120px;">
@@ -439,35 +615,34 @@
 
     <section class="card">
       <h2 data-i18n="friendsTitle"></h2>
-      <ol class="steps">
-        <li data-i18n-html="friends1"></li>
-        <li data-i18n-html="friends2"></li>
-        <li data-i18n-html="friends3"></li>
-      </ol>
+      <ol class="steps" id="friend-steps"></ol>
       <p data-i18n="friendsRemote"></p>
-      <p data-i18n-html="solo"></p>
+      <p data-i18n-html="solo" id="solo"></p>
       <p data-i18n="friendsVersion"></p>
       <p class="warn" id="smartscreen" data-i18n="smartscreen"></p>
     </section>
   </div>
 
   <div class="block">
+    <svg class="prop deco v030" viewBox="0 0 190 120" aria-hidden="true" style="--w: 140px; right: -158px; top: -10px;"><g class="deco-bob"><g transform="translate(68 26) rotate(-8 22 22)"><path d="M0 9.68 L9.68 0 L53.68 0 L44 9.68 Z" fill="#d8b183"/><path d="M44 9.68 L53.68 0 L53.68 44 L44 53.68 Z" fill="#9c7247"/><rect x="0" y="9.68" width="44" height="44" fill="#c49a6c"/></g></g><path d="M0 82 q24 -12 48 0 t48 0 t48 0 t48 0 V120 H0 Z" fill="rgba(61,155,233,.78)"/><path d="M0 92 q24 -10 48 0 t48 0 t48 0 t48 0" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3"/></svg>
     <img class="prop" src="media/props/picture_1_lie.webp" alt="" width="548" height="412" loading="lazy" decoding="async" style="--w: 250px; --r: 8deg; left: -265px; top: 110px;">
     <img class="prop" src="media/props/mirror_lie.webp" alt="" width="412" height="816" loading="lazy" decoding="async" style="--w: 190px; --r: -9deg; right: -225px; top: -50px;">
     <section class="shots" id="shots"></section>
   </div>
 
   <div class="block">
+    <svg class="prop deco v020" viewBox="0 0 130 130" aria-hidden="true" style="--w: 112px; right: -140px; top: 0;"><path d="M24 92 A46 46 0 1 1 65 111" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="5" stroke-linecap="round"/><path d="M56 104 L68 112 L57 121" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><g class="deco-spin"><g transform="translate(40 38) rotate(0 20 20)"><path d="M0 8.8 L8.8 0 L48.8 0 L40 8.8 Z" fill="#d8b183"/><path d="M40 8.8 L48.8 0 L48.8 40 L40 48.8 Z" fill="#9c7247"/><rect x="0" y="8.8" width="40" height="40" fill="#c49a6c"/></g></g></svg>
     <img class="prop" src="media/props/vase_side.webp" alt="" width="310" height="156" loading="lazy" decoding="async" style="--w: 146px; --r: -28deg; left: -190px; top: 60px;">
     <img class="prop" src="media/props/dishes_box.webp" alt="" width="346" height="346" loading="lazy" decoding="async" style="--w: 163px; --r: 9deg; right: -190px; top: -20px;">
     <section class="card">
       <h2 data-i18n="controls"></h2>
       <div class="controls" id="controls"></div>
-      <p class="warn rebind" data-i18n="rebind"></p>
+      <p class="warn rebind" id="rebind" data-i18n="rebind"></p>
     </section>
   </div>
 
   <div class="block" id="history-card" hidden>
+    <svg class="prop deco v020" viewBox="0 0 160 70" aria-hidden="true" style="--w: 120px; right: -150px; top: 60px; --r: -8deg;"><text x="80" y="54" text-anchor="middle" font-family="Open Sans, sans-serif" font-weight="800" font-size="52" fill="#e5483a" stroke="#2a0e0a" stroke-width="7" paint-order="stroke">¡AY!</text></svg>
     <img class="prop" src="media/props/armchair.webp" alt="" width="614" height="614" loading="lazy" decoding="async" style="--w: 290px; --r: 12deg; left: -320px; top: 30px;">
     <img class="prop" src="media/props/floor_lamp_side.webp" alt="" width="874" height="170" loading="lazy" decoding="async" style="--w: 500px; --r: -5deg; left: -380px; top: 420px;">
     <img class="prop" src="media/props/picture_6_lie.webp" alt="" width="479" height="345" loading="lazy" decoding="async" style="--w: 225px; --r: -6deg; right: -245px; top: 60px;">
@@ -581,6 +756,25 @@
       altLiving: "The living room with the furniture to move",
       altCarry: "Carrying a box to the truck",
       altMenu: "The main menu",
+      olderVersion: "Earlier version",
+      chooseVersion: "Choose a version: the page changes to how the game looked then",
+      seeVersion: "See this version",
+      friendsOld1: "One player clicks <b>Crear partida</b> (Create game) and allows access in the firewall.",
+      friendsOld2: "The others type the host's IP in the box and click <b>Unirse</b> (Join).",
+      ctlDistance: "Bring closer / push away what you're holding",
+      ctlMouse: "Free the mouse",
+      ctlView: "Switch view",
+      altTruckChalet: "The moving truck parked in front of the chalet",
+      altProtoMenu: "The very first main menu",
+      altProtoCoop: "Four movers carrying boxes out of the test house",
+      altProtoBumps: "The truck's bumps make the load jump",
+      altProtoPay: "The pay screen at the end of the job",
+      altSpin: "Spinning the armchair with R + mouse",
+      altBump: "Players bump into and push each other",
+      altKick: "A box kicked into the truck",
+      altOuch: "Ouch! Kicking the fridge hurts",
+      altFloat: "At the pool: light things float, heavy ones sink, and you can swim",
+      altChat: "Text and voice chat, with an icon over whoever is talking",
     },
     es: {
       language: "Idioma",
@@ -634,6 +828,25 @@
       altLiving: "El salón con los muebles que hay que llevarse",
       altCarry: "Llevando una caja al camión",
       altMenu: "El menú principal",
+      olderVersion: "Versión anterior",
+      chooseVersion: "Elige una versión: la página se ve como el juego entonces",
+      seeVersion: "Ver esta versión",
+      friendsOld1: "Uno pulsa <b>Crear partida</b> (y permite el acceso en el firewall).",
+      friendsOld2: "Los demás escriben la IP del anfitrión en la casilla y pulsan <b>Unirse</b>.",
+      ctlDistance: "Acercar / alejar lo que llevas",
+      ctlMouse: "Soltar el ratón",
+      ctlView: "Cambiar vista",
+      altTruckChalet: "El camión de mudanzas aparcado delante del chalet",
+      altProtoMenu: "El primer menú principal",
+      altProtoCoop: "Los cuatro de la mudanza sacando cajas de la casa de prueba",
+      altProtoBumps: "Los baches del camión hacen saltar la carga",
+      altProtoPay: "La pantalla de pago al acabar la mudanza",
+      altSpin: "Girando el sillón con R + ratón",
+      altBump: "Los jugadores chocan y se empujan",
+      altKick: "Una caja pateada al camión",
+      altOuch: "¡Ay! Patear la nevera duele",
+      altFloat: "En la piscina: lo ligero flota, lo pesado se hunde y se puede nadar",
+      altChat: "Chat de texto y de voz, con un icono sobre quien habla",
     },
     pt: {
       language: "Idioma",
@@ -680,6 +893,31 @@
       ctlMenu: "Menu / pausa",
       ctlFps: "Contador de FPS",
       rebind: "Você pode mudar todas as teclas em Opções (Opciones).",
+      altPool: "Uma caixa caindo na piscina do chalé",
+      altTruck: "O caminhão de mudança estacionado em frente à casa dos Martín",
+      altDoor: "Abrindo a porta do quarto agarrando-a",
+      altLiving: "A sala com os móveis para levar",
+      altCarry: "Levando uma caixa para o caminhão",
+      altMenu: "O menu principal",
+      olderVersion: "Versão anterior",
+      chooseVersion: "Escolha uma versão: a página fica como o jogo era na época",
+      seeVersion: "Ver esta versão",
+      friendsOld1: "Um jogador clica em <b>Crear partida</b> (Criar partida) e permite o acesso no firewall.",
+      friendsOld2: "Os outros digitam o IP do anfitrião na caixa e clicam em <b>Unirse</b> (Entrar).",
+      ctlDistance: "Aproximar / afastar o que você segura",
+      ctlMouse: "Soltar o mouse",
+      ctlView: "Mudar a câmera",
+      altTruckChalet: "O caminhão de mudança estacionado em frente ao chalé",
+      altProtoMenu: "O primeiro menu principal",
+      altProtoCoop: "Os quatro da mudança levando caixas para fora da casa de teste",
+      altProtoBumps: "Os buracos da estrada fazem a carga do caminhão pular",
+      altProtoPay: "A tela de pagamento no fim da mudança",
+      altSpin: "Girando a poltrona com R + mouse",
+      altBump: "Os jogadores se esbarram e se empurram",
+      altKick: "Uma caixa chutada para dentro do caminhão",
+      altOuch: "Ai! Chutar a geladeira dói",
+      altFloat: "Na piscina: o que é leve flutua, o pesado afunda e dá para nadar",
+      altChat: "Chat de texto e de voz, com um ícone sobre quem está falando",
     },
     fr: {
       language: "Langue",
@@ -726,6 +964,31 @@
       ctlMenu: "Menu / pause",
       ctlFps: "Compteur de FPS",
       rebind: "Toutes les touches se changent dans Options (Opciones).",
+      altPool: "Un carton qui tombe dans la piscine du chalet",
+      altTruck: "Le camion de déménagement garé devant la maison des Martín",
+      altDoor: "Ouvrir la porte de la chambre en l'attrapant",
+      altLiving: "Le salon avec les meubles à emporter",
+      altCarry: "Porter un carton jusqu'au camion",
+      altMenu: "Le menu principal",
+      olderVersion: "Version précédente",
+      chooseVersion: "Choisissez une version : la page prend l'apparence du jeu à l'époque",
+      seeVersion: "Voir cette version",
+      friendsOld1: "Un joueur clique sur <b>Crear partida</b> (Créer une partie) et autorise l'accès dans le pare-feu.",
+      friendsOld2: "Les autres tapent l'IP de l'hôte dans la case et cliquent sur <b>Unirse</b> (Rejoindre).",
+      ctlDistance: "Rapprocher / éloigner ce que vous tenez",
+      ctlMouse: "Libérer la souris",
+      ctlView: "Changer de vue",
+      altTruckChalet: "Le camion de déménagement garé devant le chalet",
+      altProtoMenu: "Le tout premier menu principal",
+      altProtoCoop: "Les quatre déménageurs sortent des cartons de la maison de test",
+      altProtoBumps: "Les bosses de la route font sauter le chargement du camion",
+      altProtoPay: "L'écran de paie à la fin du déménagement",
+      altSpin: "Faire tourner le fauteuil avec R + souris",
+      altBump: "Les joueurs se heurtent et se bousculent",
+      altKick: "Un carton envoyé d'un coup de pied dans le camion",
+      altOuch: "Aïe ! Frapper le frigo fait mal",
+      altFloat: "À la piscine : le léger flotte, le lourd coule, et on peut nager",
+      altChat: "Chat écrit et vocal, avec une icône au-dessus de celui qui parle",
     },
     de: {
       language: "Sprache",
@@ -772,6 +1035,31 @@
       ctlMenu: "Menü / Pause",
       ctlFps: "FPS-Anzeige",
       rebind: "Alle Tasten lassen sich unter Optionen (Opciones) ändern.",
+      altPool: "Eine Kiste platscht in den Pool des Chalets",
+      altTruck: "Der Umzugswagen vor dem Haus der Martíns",
+      altDoor: "Die Schlafzimmertür öffnen, indem man sie packt",
+      altLiving: "Das Wohnzimmer mit den Möbeln, die mitmüssen",
+      altCarry: "Eine Kiste zum Umzugswagen tragen",
+      altMenu: "Das Hauptmenü",
+      olderVersion: "Frühere Version",
+      chooseVersion: "Wähle eine Version: Die Seite sieht dann aus wie das Spiel damals",
+      seeVersion: "Diese Version ansehen",
+      friendsOld1: "Ein Spieler klickt auf <b>Crear partida</b> (Spiel erstellen) und erlaubt den Zugriff in der Firewall.",
+      friendsOld2: "Die anderen tippen die IP des Hosts ins Feld und klicken auf <b>Unirse</b> (Beitreten).",
+      ctlDistance: "Getragenes näher holen / wegschieben",
+      ctlMouse: "Maus freigeben",
+      ctlView: "Ansicht wechseln",
+      altTruckChalet: "Der Umzugswagen vor dem Chalet",
+      altProtoMenu: "Das allererste Hauptmenü",
+      altProtoCoop: "Vier Umzugshelfer tragen Kisten aus dem Testhaus",
+      altProtoBumps: "Die Schlaglöcher lassen die Ladung im Wagen hüpfen",
+      altProtoPay: "Der Bezahlbildschirm am Ende des Umzugs",
+      altSpin: "Den Sessel mit R + Maus drehen",
+      altBump: "Spieler stoßen zusammen und schubsen sich",
+      altKick: "Eine Kiste per Tritt in den Umzugswagen",
+      altOuch: "Autsch! Gegen den Kühlschrank treten tut weh",
+      altFloat: "Am Pool: Leichtes schwimmt, Schweres sinkt, und man kann schwimmen",
+      altChat: "Text- und Sprachchat, mit einem Symbol über dem, der spricht",
     },
     it: {
       language: "Lingua",
@@ -818,6 +1106,31 @@
       ctlMenu: "Menu / pausa",
       ctlFps: "Contatore FPS",
       rebind: "Puoi cambiare tutti i tasti in Opzioni (Opciones).",
+      altPool: "Una scatola che cade nella piscina dello chalet",
+      altTruck: "Il camion dei traslochi parcheggiato davanti alla casa dei Martín",
+      altDoor: "Aprire la porta della camera afferrandola",
+      altLiving: "Il soggiorno con i mobili da portare via",
+      altCarry: "Portare una scatola al camion",
+      altMenu: "Il menu principale",
+      olderVersion: "Versione precedente",
+      chooseVersion: "Scegli una versione: la pagina diventa com'era il gioco allora",
+      seeVersion: "Vedi questa versione",
+      friendsOld1: "Un giocatore clicca <b>Crear partida</b> (Crea partita) e consente l'accesso nel firewall.",
+      friendsOld2: "Gli altri scrivono l'IP dell'host nella casella e cliccano <b>Unirse</b> (Unisciti).",
+      ctlDistance: "Avvicinare / allontanare ciò che tieni",
+      ctlMouse: "Liberare il mouse",
+      ctlView: "Cambiare visuale",
+      altTruckChalet: "Il camion dei traslochi parcheggiato davanti allo chalet",
+      altProtoMenu: "Il primissimo menu principale",
+      altProtoCoop: "I quattro traslocatori portano scatole fuori dalla casa di prova",
+      altProtoBumps: "Le buche fanno saltare il carico del camion",
+      altProtoPay: "La schermata di pagamento a fine trasloco",
+      altSpin: "Girare la poltrona con R + mouse",
+      altBump: "I giocatori si scontrano e si spingono",
+      altKick: "Una scatola presa a calci nel camion",
+      altOuch: "Ahi! Prendere a calci il frigo fa male",
+      altFloat: "In piscina: il leggero galleggia, il pesante affonda e si può nuotare",
+      altChat: "Chat di testo e vocale, con un'icona sopra chi parla",
     },
     pl: {
       language: "Język",
@@ -864,6 +1177,31 @@
       ctlMenu: "Menu / pauza",
       ctlFps: "Licznik FPS",
       rebind: "Wszystkie klawisze zmienisz w Opcjach (Opciones).",
+      altPool: "Pudło wpadające do basenu przy domku",
+      altTruck: "Ciężarówka przeprowadzkowa przed domem Martínów",
+      altDoor: "Otwieranie drzwi sypialni przez złapanie ich",
+      altLiving: "Salon z meblami do wyniesienia",
+      altCarry: "Niesienie pudła do ciężarówki",
+      altMenu: "Menu główne",
+      olderVersion: "Wcześniejsza wersja",
+      chooseVersion: "Wybierz wersję: strona wygląda tak, jak gra wtedy",
+      seeVersion: "Zobacz tę wersję",
+      friendsOld1: "Jeden gracz klika <b>Crear partida</b> (Utwórz grę) i zezwala na dostęp w zaporze.",
+      friendsOld2: "Pozostali wpisują IP gospodarza w pole i klikają <b>Unirse</b> (Dołącz).",
+      ctlDistance: "Przybliż / oddal to, co trzymasz",
+      ctlMouse: "Uwolnij mysz",
+      ctlView: "Zmień widok",
+      altTruckChalet: "Ciężarówka przeprowadzkowa zaparkowana przed domkiem",
+      altProtoMenu: "Pierwsze menu główne",
+      altProtoCoop: "Czterech przeprowadzkowców wynosi pudła z domu testowego",
+      altProtoBumps: "Na wybojach ładunek w ciężarówce podskakuje",
+      altProtoPay: "Ekran wypłaty na koniec przeprowadzki",
+      altSpin: "Obracanie fotela przez R + mysz",
+      altBump: "Gracze wpadają na siebie i się przepychają",
+      altKick: "Pudło kopnięte prosto do ciężarówki",
+      altOuch: "Au! Kopanie lodówki boli",
+      altFloat: "W basenie: lekkie pływa, ciężkie tonie, a do tego można pływać",
+      altChat: "Czat tekstowy i głosowy, z ikoną nad tym, kto mówi",
     },
     tr: {
       language: "Dil",
@@ -910,6 +1248,31 @@
       ctlMenu: "Menü / duraklat",
       ctlFps: "FPS sayacı",
       rebind: "Tüm tuşları Seçenekler'den (Opciones) değiştirebilirsin.",
+      altPool: "Dağ evinin havuzuna düşen bir kutu",
+      altTruck: "Martín ailesinin evinin önüne park etmiş taşınma kamyonu",
+      altDoor: "Yatak odasının kapısını tutarak açmak",
+      altLiving: "Taşınacak mobilyalarla oturma odası",
+      altCarry: "Bir kutuyu kamyona taşımak",
+      altMenu: "Ana menü",
+      olderVersion: "Önceki sürüm",
+      chooseVersion: "Bir sürüm seç: sayfa, oyunun o zamanki görünümüne bürünür",
+      seeVersion: "Bu sürümü gör",
+      friendsOld1: "Bir oyuncu <b>Crear partida</b> (Oyun oluştur) düğmesine basar ve güvenlik duvarında erişime izin verir.",
+      friendsOld2: "Diğerleri ev sahibinin IP'sini kutuya yazar ve <b>Unirse</b> (Katıl) düğmesine basar.",
+      ctlDistance: "Tuttuğunu yaklaştır / uzaklaştır",
+      ctlMouse: "Fareyi serbest bırak",
+      ctlView: "Görünümü değiştir",
+      altTruckChalet: "Dağ evinin önüne park etmiş taşınma kamyonu",
+      altProtoMenu: "İlk ana menü",
+      altProtoCoop: "Dört taşımacı deneme evinden kutu taşıyor",
+      altProtoBumps: "Yoldaki çukurlar kamyondaki yükü zıplatıyor",
+      altProtoPay: "Taşınma bitince ödeme ekranı",
+      altSpin: "Koltuğu R + fare ile döndürmek",
+      altBump: "Oyuncular çarpışıp birbirini itiyor",
+      altKick: "Tekmeyle kamyona gönderilen bir kutu",
+      altOuch: "Ay! Buzdolabını tekmelemek acıtır",
+      altFloat: "Havuzda: hafif olan yüzer, ağır olan batar ve yüzebilirsin",
+      altChat: "Yazılı ve sesli sohbet, konuşanın üstünde bir simge",
     },
     ru: {
       language: "Язык",
@@ -956,6 +1319,31 @@
       ctlMenu: "Меню / пауза",
       ctlFps: "Счётчик FPS",
       rebind: "Все клавиши можно поменять в настройках (Opciones).",
+      altPool: "Коробка падает в бассейн у шале",
+      altTruck: "Грузовик для переезда у дома Мартинов",
+      altDoor: "Дверь спальни открывают, схватив её",
+      altLiving: "Гостиная с мебелью, которую надо вывезти",
+      altCarry: "Несём коробку к грузовику",
+      altMenu: "Главное меню",
+      olderVersion: "Предыдущая версия",
+      chooseVersion: "Выберите версию: страница станет такой, какой была игра тогда",
+      seeVersion: "Посмотреть эту версию",
+      friendsOld1: "Один игрок нажимает <b>Crear partida</b> (Создать игру) и разрешает доступ в брандмауэре.",
+      friendsOld2: "Остальные вводят IP хоста в поле и нажимают <b>Unirse</b> (Присоединиться).",
+      ctlDistance: "Приблизить / отодвинуть то, что держите",
+      ctlMouse: "Освободить мышь",
+      ctlView: "Сменить вид",
+      altTruckChalet: "Грузовик для переезда у шале",
+      altProtoMenu: "Самое первое главное меню",
+      altProtoCoop: "Четверо грузчиков выносят коробки из тестового дома",
+      altProtoBumps: "На ухабах груз в грузовике подпрыгивает",
+      altProtoPay: "Экран оплаты в конце переезда",
+      altSpin: "Вращаем кресло: R + мышь",
+      altBump: "Игроки сталкиваются и толкают друг друга",
+      altKick: "Коробка, отправленная пинком в грузовик",
+      altOuch: "Ай! Пинать холодильник больно",
+      altFloat: "В бассейне: лёгкое плавает, тяжёлое тонет, а ещё можно плавать",
+      altChat: "Текстовый и голосовой чат, со значком над тем, кто говорит",
     },
     zh: {
       language: "语言",
@@ -1002,6 +1390,31 @@
       ctlMenu: "菜单 / 暂停",
       ctlFps: "帧率显示",
       rebind: "所有按键都可以在“选项”（Opciones）中修改。",
+      altPool: "一个箱子掉进别墅的泳池",
+      altTruck: "停在马丁家门前的搬家卡车",
+      altDoor: "抓住卧室的门把它打开",
+      altLiving: "摆满待搬家具的客厅",
+      altCarry: "把箱子搬上卡车",
+      altMenu: "主菜单",
+      olderVersion: "早期版本",
+      chooseVersion: "选择一个版本：页面会变成当时游戏的样子",
+      seeVersion: "查看此版本",
+      friendsOld1: "一名玩家点击 <b>Crear partida</b>（创建游戏），并在防火墙中允许访问。",
+      friendsOld2: "其他人在输入框中填写主机的 IP，然后点击 <b>Unirse</b>（加入）。",
+      ctlDistance: "拉近 / 推远手中的物品",
+      ctlMouse: "释放鼠标",
+      ctlView: "切换视角",
+      altTruckChalet: "停在别墅前的搬家卡车",
+      altProtoMenu: "最早的主菜单",
+      altProtoCoop: "四名搬家工从测试房屋里搬出箱子",
+      altProtoBumps: "路上颠簸，卡车里的货物跳了起来",
+      altProtoPay: "搬家结束时的结算画面",
+      altSpin: "用 R + 鼠标旋转扶手椅",
+      altBump: "玩家会相撞并互相推开",
+      altKick: "一脚把箱子踢进卡车",
+      altOuch: "哎哟！踢冰箱会疼",
+      altFloat: "在泳池里：轻的会浮起来，重的会沉下去，还能游泳",
+      altChat: "文字和语音聊天，说话的人头上会出现图标",
     },
     ja: {
       language: "言語",
@@ -1048,6 +1461,31 @@
       ctlMenu: "メニュー / ポーズ",
       ctlFps: "FPS表示",
       rebind: "すべてのキーは「オプション」（Opciones）で変更できます。",
+      altPool: "シャレーのプールに落ちる箱",
+      altTruck: "マルティン家の前に停まった引っ越しトラック",
+      altDoor: "寝室のドアをつかんで開ける",
+      altLiving: "運び出す家具が並ぶリビング",
+      altCarry: "箱をトラックへ運ぶ",
+      altMenu: "メインメニュー",
+      olderVersion: "以前のバージョン",
+      chooseVersion: "バージョンを選ぶと、ページが当時のゲームの見た目になります",
+      seeVersion: "このバージョンを見る",
+      friendsOld1: "1人が <b>Crear partida</b>（ゲーム作成）を押し、ファイアウォールでアクセスを許可します。",
+      friendsOld2: "ほかの人はホストの IP を入力欄に入れて <b>Unirse</b>（参加）を押します。",
+      ctlDistance: "持っている物を近づける / 遠ざける",
+      ctlMouse: "マウスを解放",
+      ctlView: "視点切り替え",
+      altTruckChalet: "シャレーの前に停まった引っ越しトラック",
+      altProtoMenu: "いちばん最初のメインメニュー",
+      altProtoCoop: "テスト用の家から箱を運び出す4人の引っ越し屋",
+      altProtoBumps: "道のでこぼこでトラックの荷物が跳ねる",
+      altProtoPay: "引っ越しが終わったときの支払い画面",
+      altSpin: "R + マウスでアームチェアを回す",
+      altBump: "プレイヤー同士がぶつかって押し合う",
+      altKick: "蹴ってトラックに入れた箱",
+      altOuch: "痛っ！冷蔵庫を蹴ると痛い",
+      altFloat: "プールでは軽い物は浮き、重い物は沈み、泳ぐこともできる",
+      altChat: "テキストとボイスのチャット。話している人の上にアイコンが出る",
     },
     ko: {
       language: "언어",
@@ -1094,25 +1532,91 @@
       ctlMenu: "메뉴 / 일시정지",
       ctlFps: "FPS 표시",
       rebind: "모든 키는 옵션(Opciones)에서 바꿀 수 있습니다.",
+      altPool: "샬레 수영장에 빠지는 상자",
+      altTruck: "마르틴네 집 앞에 주차된 이삿짐 트럭",
+      altDoor: "침실 문을 붙잡아 여는 모습",
+      altLiving: "옮겨야 할 가구가 있는 거실",
+      altCarry: "상자를 트럭으로 나르는 중",
+      altMenu: "메인 메뉴",
+      olderVersion: "이전 버전",
+      chooseVersion: "버전을 고르면 페이지가 그때 게임의 모습으로 바뀝니다",
+      seeVersion: "이 버전 보기",
+      friendsOld1: "한 명이 <b>Crear partida</b>(게임 만들기)를 누르고 방화벽에서 접근을 허용합니다.",
+      friendsOld2: "나머지는 호스트의 IP를 입력란에 적고 <b>Unirse</b>(참가)를 누릅니다.",
+      ctlDistance: "들고 있는 것을 가까이 / 멀리",
+      ctlMouse: "마우스 풀기",
+      ctlView: "시점 전환",
+      altTruckChalet: "샬레 앞에 주차된 이삿짐 트럭",
+      altProtoMenu: "맨 처음 메인 메뉴",
+      altProtoCoop: "테스트 집에서 상자를 나르는 이삿짐꾼 네 명",
+      altProtoBumps: "길이 울퉁불퉁해 트럭 짐이 튀어 오른다",
+      altProtoPay: "이사를 마치면 나오는 정산 화면",
+      altSpin: "R + 마우스로 안락의자 돌리기",
+      altBump: "플레이어끼리 부딪치고 밀친다",
+      altKick: "발로 차서 트럭에 넣은 상자",
+      altOuch: "아야! 냉장고를 차면 아프다",
+      altFloat: "수영장에서는 가벼운 건 뜨고 무거운 건 가라앉으며, 헤엄도 칠 수 있다",
+      altChat: "텍스트와 음성 채팅, 말하는 사람 머리 위에 아이콘이 뜬다",
     },
   };
 
-  // Los controles de la última versión publicada: desde WHEEL_SINCE, la rueda gira lo que llevas y
-  // R + rueda lo tumba; antes, R + ratón lo giraba.
-  const WHEEL_SINCE = [0, 5, 0];
+  // Los controles de cada versión: [tecla, acción, desde, hasta (sin incluirla)]. Hasta la 0.3
+  // la rueda acercaba o alejaba lo que llevas y Esc soltaba el ratón; desde la 0.5, la rueda lo
+  // gira y R + rueda lo tumba (antes, R + ratón lo giraba). V cambiaba de vista solo en la 0.3.
   const CONTROLS = [
     ["WASD", "ctlMove"], ["Shift", "ctlRun"], ["@keySpace", "ctlJump"],
-    ["@keyLeft", "ctlGrab"], ["@keyRight", "ctlKick"], "rotate",
-    ["Ctrl", "ctlCrouch"], ["E", "ctlUse"],
-    ["T", "ctlChat"], ["B", "ctlTalk"], ["Esc", "ctlMenu"], ["F3", "ctlFps"],
+    ["@keyLeft", "ctlGrab"], ["@keyRight", "ctlKick", [0, 2, 0]],
+    ["@keyWheel", "ctlDistance", null, [0, 3, 0]],
+    ["@keyRotate", "ctlRotate", [0, 2, 0], [0, 5, 0]],
+    ["@keyWheel", "ctlRotate", [0, 5, 0]], ["@keyTip", "ctlTip", [0, 5, 0]],
+    ["Ctrl", "ctlCrouch", [0, 3, 0]], ["E", "ctlUse"], ["V", "ctlView", [0, 3, 0], [0, 4, 0]],
+    ["T", "ctlChat", [0, 3, 0]], ["B", "ctlTalk", [0, 3, 0]],
+    ["Esc", "ctlMouse", null, [0, 3, 0]], ["Esc", "ctlMenu", [0, 3, 0]], ["F3", "ctlFps", [0, 3, 0]],
   ];
-  const ROTATE_WHEEL = [["@keyWheel", "ctlRotate"], ["@keyTip", "ctlTip"]];
-  const ROTATE_MOUSE = [["@keyRotate", "ctlRotate"]];
+  // Las capturas de la versión más nueva (y de las que vengan sin las suyas).
   const SHOTS = [
     ["screenshots/living-room.webp", "altLiving"], ["screenshots/door.webp", "altDoor"],
     ["screenshots/carrying.webp", "altCarry"], ["screenshots/truck.webp", "altTruck"],
     ["screenshots/pool.webp", "altPool"], ["screenshots/menu.webp", "altMenu"],
   ];
+  // La versión actual (la última publicada) se ve como la página de siempre (CURRENT_LOOK: el
+  // cartón, con el vídeo y las capturas de media/ y screenshots/). Las anteriores, como eran los
+  // menús de su época (ver los estilos de data-era), con su vídeo de fondo y sus capturas.
+  const LOOKS = {
+    "v0.1.0": {
+      era: "proto", media: "media/v0.1.0/", shots: [
+        ["screenshots/v0.1.0/coop.webp", "altProtoCoop"], ["screenshots/v0.1.0/bumps.webp", "altProtoBumps"],
+        ["screenshots/v0.1.0/pay.webp", "altProtoPay"], ["screenshots/v0.1.0/menu.webp", "altProtoMenu"],
+      ],
+    },
+    "v0.2.0": {
+      era: "proto", media: "media/v0.2.0/", shots: [
+        ["screenshots/v0.2.0/spin.webp", "altSpin"], ["screenshots/v0.2.0/kick.webp", "altKick"],
+        ["screenshots/v0.2.0/bump.webp", "altBump"], ["screenshots/v0.2.0/ouch.webp", "altOuch"],
+      ],
+    },
+    "v0.3.0": {
+      era: "navy", media: "media/v0.3.0/", shots: [
+        ["screenshots/v0.3.0/float.webp", "altFloat"], ["screenshots/v0.3.0/chat.webp", "altChat"],
+        ["screenshots/v0.3.0/truck.webp", "altTruckChalet"], ["screenshots/v0.3.0/living-room.webp", "altLiving"],
+        ["screenshots/v0.3.0/carrying.webp", "altCarry"], ["screenshots/v0.3.0/menu.webp", "altMenu"],
+      ],
+    },
+    "v0.4.0": {
+      era: "navy", media: "media/v0.4.0/", shots: [
+        ["screenshots/v0.4.0/living-room.webp", "altLiving"], ["screenshots/v0.4.0/door.webp", "altDoor"],
+        ["screenshots/v0.4.0/carrying.webp", "altCarry"], ["screenshots/v0.4.0/truck.webp", "altTruck"],
+        ["screenshots/v0.4.0/pool.webp", "altPool"], ["screenshots/v0.4.0/menu.webp", "altMenu"],
+      ],
+    },
+  };
+  const CURRENT_LOOK = { era: "", media: "media/", shots: SHOTS };
+  const THEME_COLORS = { "": "#2b2118", navy: "#1c2438", proto: "#1c243a" };
+  // La última versión publicada cuando se actualizó la página: es la actual hasta que llega la
+  // lista de versiones (y si no llega).
+  const PUBLISHED = "v0.4.0";
+  const currentTag = () => (releases && releases.length ? releases[0].tag_name : PUBLISHED);
+  const lookOf = tag => (tag === currentTag() ? CURRENT_LOOK : LOOKS[tag] || CURRENT_LOOK);
 
   // Versiones de ejemplo para la vista previa en local.
   const demoAssets = sizes => Object.values(PLATFORMS).map((p, i) => ({ name: p.file, size: sizes[i] * 1048576, browser_download_url: "#" }));
@@ -1139,7 +1643,17 @@
     },
   ];
 
+  if (params.get("demo") === "next") {
+    DEMO_RELEASES.unshift({
+      tag_name: "v0.5.0", draft: false, published_at: "2026-10-10T00:00:00Z",
+      assets: demoAssets([300, 260, 210]), body: "Cartón por todas partes.\n- Ejemplo.",
+    });
+  }
+
   let lang = "en";
+  // La versión que se está viendo (?v=0.3.0); sin ella, la última publicada.
+  let chosen = (params.get("v") || "").replace(/^v?/i, "v");
+  if (chosen === "v") chosen = "";
   let releases = null;       // null = cargando, [] = ninguna publicada
   let loadFailed = false;
   // Notas de cada versión traducidas y su fecha real (release-notes.json). Si falta
@@ -1208,10 +1722,8 @@
     $("smartscreen").hidden = PLATFORM !== "windows";
     $("game-lang").hidden = lang === "es";
     $("demo").hidden = !DEMO;
-    $("shots").innerHTML = SHOTS.map(([src, alt], i) =>
-      `<a class="photo${i ? "" : " big"}" href="${src}" target="_blank" rel="noopener">` +
-      `<img src="${src}" alt="" width="1280" height="720" loading="lazy"><span class="cap">${esc(t(alt))}</span></a>`
-    ).join("");
+    $("version").setAttribute("aria-label", t("chooseVersion"));
+    $("version").title = t("chooseVersion");
     renderVideoToggle();
     for (const [id, key] of [["viewer-close", "closePhoto"], ["viewer-prev", "prevPhoto"], ["viewer-next", "nextPhoto"]]) {
       $(id).setAttribute("aria-label", t(key));
@@ -1243,57 +1755,133 @@
     return true;
   }
 
-  function renderControls() {
-    const latest = releases && releases[0];
-    const wheel = latest ? atLeast(latest.tag_name, WHEEL_SINCE) : false;
-    $("controls").innerHTML = CONTROLS.flatMap(row => row === "rotate" ? (wheel ? ROTATE_WHEEL : ROTATE_MOUSE) : [row])
+  // La versión que se enseña: la elegida si está publicada; si no, la última. Mientras no
+  // llega la lista, la elegida o PUBLISHED.
+  function shownRelease() {
+    if (!releases || !releases.length) return null;
+    return releases.find(r => r.tag_name === chosen) || releases[0];
+  }
+  const shownTag = () => (shownRelease() || {}).tag_name || chosen || PUBLISHED;
+
+  function renderControls(tag) {
+    $("controls").innerHTML = CONTROLS
+      .filter(([, , since, until]) => (!since || atLeast(tag, since)) && (!until || !atLeast(tag, until)))
       .map(([key, action]) =>
         `<div class="control"><kbd>${esc(key.startsWith("@") ? t(key.slice(1)) : key)}</kbd><span>${esc(t(action))}</span></div>`
       ).join("");
   }
 
+  // Antes de la 0.3 no había "Jugar solo" ni opciones: se creaba la partida y los demás escribían la IP.
+  function renderFriends(tag) {
+    const modern = atLeast(tag, [0, 3, 0]);
+    $("friend-steps").innerHTML = (modern ? ["friends1", "friends2", "friends3"] : ["friendsOld1", "friendsOld2"])
+      .map(key => `<li>${t(key)}</li>`).join("");
+    $("solo").hidden = !modern;
+    $("rebind").hidden = !modern;
+  }
+
+  let shots = SHOTS;
+  function renderShots() {
+    $("shots").dataset.count = shots.length;
+    $("shots").innerHTML = shots.map(([src, alt], i) =>
+      `<a class="photo${i ? "" : " big"}" href="${src}" target="_blank" rel="noopener">` +
+      `<img src="${src}" alt="" width="1280" height="720" loading="lazy"><span class="cap">${esc(t(alt))}</span></a>`
+    ).join("");
+  }
+
+  // Viste la página como la versión `tag`: los colores y piezas de sus menús, su vídeo de fondo y sus capturas.
+  let look = null;
+  function applyLook(tag) {
+    const next = lookOf(tag);
+    if (next === look) return;
+    look = next;
+    const root = document.documentElement;
+    if (look.era) root.dataset.era = look.era;
+    else delete root.dataset.era;
+    document.querySelector('meta[name="theme-color"]').content = THEME_COLORS[look.era];
+    const poster = `${look.media}hero-poster.webp`;
+    $("hero").style.setProperty("--poster", `url(${poster})`);
+    video.poster = poster;
+    if (video.dataset.loaded && video.dataset.loaded !== look.media) {
+      video.pause();
+      video.replaceChildren();
+      delete video.dataset.loaded;
+      video.load();
+      updateVideo();
+    }
+    shots = look.shots;
+  }
+
   function renderReleases() {
-    renderControls();
+    const shown = shownRelease();
+    const tag = shownTag();
+    document.documentElement.dataset.version = tag;
+    renderControls(tag);
+    renderFriends(tag);
+    applyLook(tag);
+    renderShots();
     const badge = $("badge");
+    const select = $("version");
     const hasRelease = releases && releases.length > 0;
     badge.classList.toggle("soon", releases !== null && !hasRelease && !loadFailed);
+    badge.classList.toggle("old", !!shown && shown !== releases[0]);
     renderDownloads(null, false);
     $("news-card").hidden = !hasRelease;
     $("history-card").hidden = !hasRelease;
 
-    if (releases === null) {
-      badge.textContent = t("latest");
-      $("version").textContent = "—";
-      $("meta").textContent = t(loadFailed ? "apiError" : "loading");
-      return;
-    }
     if (!hasRelease) {
+      select.innerHTML = "<option>—</option>";
+      select.disabled = true;
+      if (releases === null) {
+        badge.textContent = t("latest");
+        $("meta").textContent = t(loadFailed ? "apiError" : "loading");
+        return;
+      }
       badge.textContent = t("soonTitle");
-      $("version").textContent = "—";
       $("meta").textContent = t("soonText");
       renderDownloads(null, true);
       return;
     }
 
-    const latest = releases[0];
-    badge.textContent = t("latest");
-    $("version").textContent = latest.tag_name;
+    badge.textContent = t(shown === releases[0] ? "latest" : "olderVersion");
+    select.disabled = releases.length < 2;
+    select.innerHTML = releases.map(r => `<option value="${esc(r.tag_name)}">${esc(r.tag_name)}</option>`).join("");
+    select.value = shown.tag_name;
     // El tamaño va en cada botón.
-    $("meta").textContent = t("released", { date: fmtDate(dateOf(latest)), size: "" }).replace(/ · $/, "");
-    renderDownloads(latest, false);
-    $("news-tag").textContent = latest.tag_name;
-    $("news").innerHTML = renderNotes(notesOf(latest));
-    // Todas las versiones jugables, cada una con su archivo para cada sistema.
-    $("history").innerHTML = releases.map((release, i) => {
+    $("meta").textContent = t("released", { date: fmtDate(dateOf(shown)), size: "" }).replace(/ · $/, "");
+    renderDownloads(shown, false);
+    $("news-tag").textContent = shown.tag_name;
+    $("news").innerHTML = renderNotes(notesOf(shown));
+    // Todas las versiones jugables, cada una con su archivo para cada sistema; la que se ve, marcada.
+    $("history").innerHTML = releases.map(release => {
+      const current = release === shown;
       const links = Object.keys(PLATFORMS).filter(p => assetFor(release, p))
         .map(p => `<a class="chip" href="${esc(assetUrl(release, p))}">${DOWNLOAD_ICON}${esc(PLATFORMS[p].os)}</a>`).join("");
-      const block = i > 0 && links ? `<div class="platform-links"><span>${esc(t("downloadThis"))}:</span>${links}</div>` : "";
-      return `<article class="release-item">
+      const block = !current && links ? `<div class="platform-links"><span>${esc(t("downloadThis"))}:</span>${links}</div>` : "";
+      const see = current ? "" : `<button class="chip" type="button" data-see="${esc(release.tag_name)}">${esc(t("seeVersion"))}</button>`;
+      return `<article class="release-item${current ? " current" : ""}">
         <div class="release-head"><span class="release-tag">${esc(release.tag_name)}</span>
-        <span class="release-date">${esc(fmtDate(dateOf(release)))}</span></div>
+        <span class="release-date">${esc(fmtDate(dateOf(release)))}</span>${see}</div>
         <div class="notes">${renderNotes(notesOf(release))}</div>${block}</article>`;
     }).join("");
   }
+
+  // Elegir otra versión: la página se viste como ella y la dirección la recuerda (?v=0.3.0).
+  function choose(tag) {
+    chosen = tag;
+    const url = new URL(location.href);
+    if (releases && releases[0] && releases[0].tag_name === tag) url.searchParams.delete("v");
+    else url.searchParams.set("v", tag.replace(/^v/, ""));
+    history.replaceState(null, "", url);
+    renderReleases();
+  }
+  $("version").addEventListener("change", e => choose(e.target.value));
+  $("history").addEventListener("click", e => {
+    const button = e.target.closest("[data-see]");
+    if (!button) return;
+    choose(button.dataset.see);
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  });
 
   const video = $("hero-video");
   const PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg>';
@@ -1313,12 +1901,13 @@
 
   function updateVideo() {
     if (videoOn && !video.dataset.loaded) {
-      video.dataset.loaded = "1";
+      const media = (look || lookOf(shownTag())).media;
+      video.dataset.loaded = media;
       video.muted = true;
       // En 1080p si la pantalla lo aprovecha; en el móvil (o si no), en 720p, que pesa menos de la mitad.
       const big = innerWidth >= 900 && Math.max(innerWidth, innerHeight) * (window.devicePixelRatio || 1) > 1500;
       const size = big ? "1080" : "720";
-      for (const [src, type] of [[`media/hero-${size}.webm`, "video/webm"], [`media/hero-${size}.mp4`, "video/mp4"]]) {
+      for (const [src, type] of [[`${media}hero-${size}.webm`, "video/webm"], [`${media}hero-${size}.mp4`, "video/mp4"]]) {
         const source = document.createElement("source");
         source.src = src;
         source.type = type;
@@ -1354,8 +1943,8 @@
   let touchX = null;
 
   function showPhoto(index) {
-    viewing = (index + SHOTS.length) % SHOTS.length;
-    const [src, alt] = SHOTS[viewing];
+    viewing = (index + shots.length) % shots.length;
+    const [src, alt] = shots[viewing];
     $("viewer-img").src = src;
     $("viewer-img").alt = t(alt);
     $("viewer-cap").textContent = t(alt);
